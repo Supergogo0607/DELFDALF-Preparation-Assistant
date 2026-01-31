@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DALF C1/C2 AI学习助手</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .spinner {
+            animation: spin 1s linear infinite;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <!-- 配置提示 -->
+    <div id="config-notice" class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4">
+        <p class="font-bold">⚙️ 配置提醒</p>
+        <p>请先修改第127行的 <code>WORKER_URL</code> 为你的Cloudflare Worker地址！</p>
+    </div>
+
+    <div id="app" class="p-6">
+        <div class="max-w-4xl mx-auto">
+            <!-- Header -->
+            <div class="bg-white rounded-2xl shadow-xl p-8 mb-6">
+                <div class="flex items-center gap-3 mb-4">
+                    <svg class="w-10 h-10 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                    </svg>
+                    <h1 class="text-3xl font-bold text-gray-800">DALF C1/C2 学习助手</h1>
+                </div>
+                <p class="text-gray-600">
+                    专业的法语考试备考工具 • 20年教学经验 • AI智能辅导 🎓
+                </p>
+            </div>
+
+            <!-- Progress Steps -->
+            <div id="progress" class="bg-white rounded-2xl shadow-xl p-6 mb-6">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center">
+                        <div class="flex flex-col items-center step-item" data-step="0">
+                            <div class="w-12 h-12 rounded-full flex items-center justify-center mb-2 bg-indigo-600 text-white step-circle">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                                </svg>
+                            </div>
+                            <span class="text-xs font-medium text-gray-700 text-center">输入文章</span>
+                        </div>
+                        <svg class="w-6 h-6 mx-2 text-gray-300 step-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="flex flex-col items-center step-item opacity-40" data-step="1">
+                            <div class="w-12 h-12 rounded-full flex items-center justify-center mb-2 bg-gray-200 text-gray-500 step-circle">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
+                                </svg>
+                            </div>
+                            <span class="text-xs font-medium text-gray-700 text-center">词块学习</span>
+                        </div>
+                        <svg class="w-6 h-6 mx-2 text-gray-300 step-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="flex flex-col items-center step-item opacity-40" data-step="2">
+                            <div class="w-12 h-12 rounded-full flex items-center justify-center mb-2 bg-gray-200 text-gray-500 step-circle">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <span class="text-xs font-medium text-gray-700 text-center">挖空练习</span>
+                        </div>
+                        <svg class="w-6 h-6 mx-2 text-gray-300 step-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="flex flex-col items-center step-item opacity-40" data-step="3">
+                            <div class="w-12 h-12 rounded-full flex items-center justify-center mb-2 bg-gray-200 text-gray-500 step-circle">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <span class="text-xs font-medium text-gray-700 text-center">AI批改</span>
+                        </div>
+                        <svg class="w-6 h-6 mx-2 text-gray-300 step-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </div>
+                    <div class="flex flex-col items-center step-item opacity-40" data-step="4">
+                        <div class="w-12 h-12 rounded-full flex items-center justify-center mb-2 bg-gray-200 text-gray-500 step-circle">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                            </svg>
+                        </div>
+                        <span class="text-xs font-medium text-gray-700 text-center">快速复习</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="bg-white rounded-2xl shadow-xl p-8" id="main-content">
+                <!-- 内容将由JavaScript动态生成 -->
+            </div>
+
+            <!-- Footer -->
+            <div class="mt-6 text-center text-gray-600 text-sm">
+                <p>💡 基于 Claude AI • 专为DALF C1/C2考生设计</p>
+                <p class="mt-2">🔒 您的API Key安全存储在Cloudflare Worker中</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========================================
+        // 🔧 配置区域 - 请修改这里！
+        // ========================================
+        const WORKER_URL = 'delfdalf-preparation-assistant.yifan6760.workers.dev';
+        // 👆 改成你的Cloudflare Worker URL！
+        
+        // ========================================
+        // 系统Prompt
+        // ========================================
+        const SYSTEM_PROMPT = `你是一位教授DALF C1/C2的法语教师，你有20年的教龄，同时兼任DALF考官。
+
+你的角色特点：
+- 注重逻辑，引导学生搭建表达逻辑，使思路层层深入
+- 注重表达的地道性和语言的严谨性
+- 在出现错误时，积极耐心地引导学生自查和纠正
+- 多多鼓励学生，使用emoji，鼓励风格可以适当夸张`;
+
+        // ========================================
+        // 状态管理
+        // ========================================
+        let currentStep = 0;
+        let articleText = '';
+        let vocabContent = '';
+        let clozeContent = '';
+        let userAnswers = '';
+
+        // ========================================
+        // 初始化
+        // ========================================
+        document.addEventListener('DOMContentLoaded', () => {
+            renderStep0();
+            updateProgress();
+            
+            // 检查配置
+            if (WORKER_URL.includes('你的用户名')) {
+                document.getElementById('config-notice').style.display = 'block';
+            } else {
+                document.getElementById('config-notice').style.display = 'none';
+            }
+        });
+
+        // ========================================
+        // API调用
+        // ========================================
+        async function callClaude(userMessage) {
+            try {
+                const response = await fetch(WORKER_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: 'claude-sonnet-4-20250514',
+                        max_tokens: 4000,
+                        system: SYSTEM_PROMPT,
+                        messages: [{
+                            role: 'user',
+                            content: userMessage
+                        }]
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || '请求失败');
+                }
+
+                const data = await response.json();
+                return data.content.find(c => c.type === 'text')?.text || '生成失败';
+            } catch (error) {
+                console.error('API Error:', error);
+                throw error;
+            }
+        }
+
+        // ========================================
+        // 步骤渲染
+        // ========================================
+        function renderStep0() {
+            const content = `
+                <div class="space-y-6">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">📝 第一步：输入法语文章</h2>
+                        <p class="text-gray-600 mb-4">
+                            粘贴一篇法语文章或听力转写文本，AI会帮你提取关键词块、生成练习题，并提供批改反馈！
+                        </p>
+                        <textarea
+                            id="article-input"
+                            class="w-full h-64 p-4 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none"
+                            placeholder="在这里粘贴法语文章... 例如：来自Le Monde、Le Figaro的文章，或者DALF听力的转写文本"
+                        ></textarea>
+                    </div>
+                    <button
+                        onclick="generateVocab()"
+                        class="w-full bg-indigo-600 text-white py-4 rounded-lg font-semibold hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
+                    >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
+                        </svg>
+                        开始学习 - 生成词块和句式
+                    </button>
+                </div>
+            `;
+            document.getElementById('main-content').innerHTML = content;
+        }
+
+        function renderStep1() {
+            const content = `
+                <div class="space-y-6">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">📚 词块与句式学习</h2>
+                        <div class="bg-gray-50 p-6 rounded-lg mb-6 max-h-96 overflow-y-auto whitespace-pre-wrap">
+${vocabContent}
+                        </div>
+                    </div>
+                    <div class="flex gap-4">
+                        <button
+                            onclick="goToStep(0)"
+                            class="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-colors"
+                        >
+                            返回修改文章
+                        </button>
+                        <button
+                            onclick="generateCloze()"
+                            class="flex-1 bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
+                        >
+                            下一步：挖空练习
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.getElementById('main-content').innerHTML = content;
+        }
+
+        function renderStep2() {
+            const content = `
+                <div class="space-y-6">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">✍️ 挖空练习</h2>
+                        <div class="bg-gray-50 p-6 rounded-lg mb-6 max-h-64 overflow-y-auto whitespace-pre-wrap">
+${clozeContent}
+                        </div>
+                        <p class="text-gray-600 mb-3">在下方输入你的答案：</p>
+                        <textarea
+                            id="answers-input"
+                            class="w-full h-48 p-4 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none"
+                            placeholder="输入你的答案..."
+                        ></textarea>
+                    </div>
+                    <div class="flex gap-4">
+                        <button
+                            onclick="goToStep(1)"
+                            class="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-colors"
+                        >
+                            返回词块学习
+                        </button>
+                        <button
+                            onclick="generateFeedback()"
+                            class="flex-1 bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
+                        >
+                            提交批改
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.getElementById('main-content').innerHTML = content;
+        }
+
+        function renderStep3(feedback) {
+            const content = `
+                <div class="space-y-6">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">✅ AI批改反馈</h2>
+                        <div class="bg-gradient-to-r from-green-50 to-blue-50 p-6 rounded-lg mb-6 max-h-96 overflow-y-auto whitespace-pre-wrap">
+${feedback}
+                        </div>
+                    </div>
+                    <div class="flex gap-4">
+                        <button
+                            onclick="generateReview()"
+                            class="flex-1 bg-indigo-600 text-white py-4 rounded-lg font-semibold hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
+                        >
+                            下一步：快速复习
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.getElementById('main-content').innerHTML = content;
+        }
+
+        function renderStep4(review) {
+            const content = `
+                <div class="space-y-6">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">🎴 快速复习 (25分钟)</h2>
+                        <div class="bg-gradient-to-r from-purple-50 to-pink-50 p-6 rounded-lg mb-6 max-h-96 overflow-y-auto whitespace-pre-wrap">
+${review}
+                        </div>
+                    </div>
+                    <div class="flex gap-4">
+                        <button
+                            onclick="resetAll()"
+                            class="flex-1 bg-green-600 text-white py-4 rounded-lg font-semibold hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+                        >
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
+                            </svg>
+                            学习完成！开始新的文章
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.getElementById('main-content').innerHTML = content;
+        }
+
+        // ========================================
+        // 业务逻辑
+        // ========================================
+        async function generateVocab() {
+            articleText = document.getElementById('article-input').value.trim();
+            if (!articleText) {
+                alert('请先输入法语文章！');
+                return;
+            }
+
+            showLoading('正在生成词块学习内容...');
+
+            try {
+                const prompt = `现在请分析以下法语文章，提取关键词块（主题词、可迁移词、拓展搭配）。
+
+对每个词块，请提供：
+- 词性
+- 中文翻译
+- 常见搭配(collocations)
+- 语域(正式/口语)
+- 近义词
+- 反义词
+- 例句
+
+然后生成练习题：选词填空（不超过8题）和句子翻译（不超过4题）。
+
+文章内容：
+${articleText}
+
+请用清晰的格式输出，使用emoji让内容更生动！🎯`;
+
+                vocabContent = await callClaude(prompt);
+                currentStep = 1;
+                updateProgress();
+                renderStep1();
+            } catch (error) {
+                alert('生成失败：' + error.message);
+                hideLoading();
+            }
+        }
+
+        async function generateCloze() {
+            showLoading('正在生成挖空练习...');
+
+            try {
+                const prompt = `请为以下文章生成挖空练习（résumé à trous）。
+
+挖空分为两个等级：
+- Niveau 1 (30%)：事实信息（人名、日期、数字、专有名词）、逻辑词
+- Niveau 2 (70%)：主题词、易错词、时态语态变位
+
+在挖空前，先给出"预习提示"，引导用户回忆之前学过的词块和句式。
+
+文章内容：
+${articleText}
+
+请生成15-20个挖空，格式清晰，用emoji让练习更有趣！✨`;
+
+                clozeContent = await callClaude(prompt);
+                currentStep = 2;
+                updateProgress();
+                renderStep2();
+            } catch (error) {
+                alert('生成失败：' + error.message);
+                hideLoading();
+            }
+        }
+
+        async function generateFeedback() {
+            userAnswers = document.getElementById('answers-input').value.trim();
+            if (!userAnswers) {
+                alert('请先填写你的答案！');
+                return;
+            }
+
+            showLoading('AI正在批改中...');
+
+            try {
+                const prompt = `学生完成了挖空练习，请批改并给出详细反馈。
+
+批改要求：
+1. 分析结构完整性
+2. 修改语法错误，并提供巩固练习
+3. 提供优化表达建议
+4. 给出优化后的完整版本
+5. 打分（内容、结构、语言准确性、语言多样性、连贯性，各0-5分）
+
+练习题：
+${clozeContent}
+
+学生答案：
+${userAnswers}
+
+请给出详细、鼓励性的批改反馈！记得多用emoji鼓励学生！💪`;
+
+                const feedback = await callClaude(prompt);
+                currentStep = 3;
+                updateProgress();
+                renderStep3(feedback);
+            } catch (error) {
+                alert('生成失败：' + error.message);
+                hideLoading();
+            }
+        }
+
+        async function generateReview() {
+            showLoading('正在生成复习材料...');
+
+            try {
+                const prompt = `请基于之前学习的内容，生成快速复习材料（25分钟内能完成）：
+
+1. 所学词块的中法互译（flashcards形式）
+2. 观点再现练习（提供思路链和关键词引导）
+
+原文：
+${articleText}
+
+请让复习材料简洁高效，用emoji让学习更有趣！🎴`;
+
+                const review = await callClaude(prompt);
+                currentStep = 4;
+                updateProgress();
+                renderStep4(review);
+            } catch (error) {
+                alert('生成失败：' + error.message);
+                hideLoading();
+            }
+        }
+
+        function resetAll() {
+            currentStep = 0;
+            articleText = '';
+            vocabContent = '';
+            clozeContent = '';
+            userAnswers = '';
+            updateProgress();
+            renderStep0();
+        }
+
+        function goToStep(step) {
+            currentStep = step;
+            updateProgress();
+            if (step === 0) renderStep0();
+            else if (step === 1) renderStep1();
+        }
+
+        // ========================================
+        // UI辅助
+        // ========================================
+        function updateProgress() {
+            const steps = document.querySelectorAll('.step-item');
+            const arrows = document.querySelectorAll('.step-arrow');
+
+            steps.forEach((step, index) => {
+                const circle = step.querySelector('.step-circle');
+                if (index < currentStep) {
+                    step.classList.remove('opacity-40');
+                    circle.className = 'w-12 h-12 rounded-full flex items-center justify-center mb-2 bg-green-500 text-white step-circle';
+                } else if (index === currentStep) {
+                    step.classList.remove('opacity-40');
+                    circle.className = 'w-12 h-12 rounded-full flex items-center justify-center mb-2 bg-indigo-600 text-white step-circle';
+                } else {
+                    step.classList.add('opacity-40');
+                    circle.className = 'w-12 h-12 rounded-full flex items-center justify-center mb-2 bg-gray-200 text-gray-500 step-circle';
+                }
+            });
+
+            arrows.forEach((arrow, index) => {
+                if (index < currentStep) {
+                    arrow.classList.add('text-green-500');
+                    arrow.classList.remove('text-gray-300');
+                } else {
+                    arrow.classList.add('text-gray-300');
+                    arrow.classList.remove('text-green-500');
+                }
+            });
+        }
+
+        function showLoading(message) {
+            const content = `
+                <div class="flex flex-col items-center justify-center py-20">
+                    <div class="w-16 h-16 border-4 border-indigo-600 border-t-transparent rounded-full spinner mb-4"></div>
+                    <p class="text-xl text-gray-700">${message}</p>
+                </div>
+            `;
+            document.getElementById('main-content').innerHTML = content;
+        }
+
+        function hideLoading() {
+            // Loading will be replaced by next render
+        }
+    </script>
+</body>
+</html>
