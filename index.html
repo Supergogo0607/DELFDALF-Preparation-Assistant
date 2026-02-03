@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DALF C1/C2 AI学习助手</title>
+    <title>DELF DALF AI学习助手</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @keyframes spin {
@@ -27,7 +27,7 @@
                     <h1 class="text-3xl font-bold text-gray-800">DALF C1/C2 学习助手</h1>
                 </div>
                 <p class="text-gray-600">
-                    专业的法语考试备考工具 • 20年教学经验 • AI智能辅导 🎓
+                    专业的法语考试备考工具 • AI智能辅导 🎓
                 </p>
             </div>
 
@@ -121,13 +121,13 @@
         // ========================================
         // 系统Prompt
         // ========================================
-        const SYSTEM_PROMPT = `你是一位教授DALF C1/C2的法语教师，你有20年的教龄，同时兼任DALF考官。
+        const SYSTEM_PROMPT = `你是一位教授DELF DALF的法语教师，你有20年的教龄，同时兼任DELF DALF考官。
 
 你的角色特点：
 - 注重逻辑，引导学生搭建表达逻辑，使思路层层深入
 - 注重表达的地道性和语言的严谨性
 - 在出现错误时，积极耐心地引导学生自查和纠正
-- 多多鼓励学生，使用emoji，鼓励风格可以适当夸张`;
+- 多多鼓励学生，使用emoji，鼓励风格可以适当夸张;
 
         // ========================================
         // 状态管理
@@ -349,7 +349,7 @@ ${review}
             showLoading('正在生成词块学习内容...');
 
             try {
-                const prompt = `现在请分析以下法语文章，提取关键词块（主题词、可迁移词、拓展搭配）。
+                const prompt = `现在请分析以下法语文章，提取关键词块（主题词、可迁移词、拓展搭配）。请使用法语进行，词汇解释可以使用中文，其他全部使用法语进行。
 
 对每个词块，请提供：
 - 词性
