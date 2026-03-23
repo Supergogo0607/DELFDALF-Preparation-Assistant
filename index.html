@@ -1,532 +1,1767 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DELF DALF AI学习助手</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>DALF Rédacteur Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;500;600;700&family=Literata:ital,wght@0,400;0,600;1,400&family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked@11.1.1/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
+        :root {
+            --bg-base: #EBEBE6;
+            --bg-card: #F5F5F2;
+            --bg-hover: #E8E8E3;
+            --text-primary: #2C2C2B;
+            --text-secondary: #6B6B68;
+            --text-muted: #9A9A95;
+            --border-soft: #D1D1CB;
+            --accent-green: #5E6D62;
+            --accent-warm: #A67B7B;
+            --accent-gold: #C9A961;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            font-family: 'Literata', 'Noto Serif SC', serif;
+            line-height: 1.75;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* ========== 头部导航 ========== */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border-soft);
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            font-family: 'Crimson Pro', serif;
+        }
+
+        .lang-switch {
+            display: flex;
+            gap: 4px;
+            background: var(--bg-card);
+            padding: 4px;
+            border-radius: 10px;
+            border: 1px solid var(--border-soft);
+        }
+
+        .lang-option {
+            padding: 8px 16px;
+            border-radius: 7px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text-secondary);
+            border: none;
+            background: transparent;
+        }
+
+        .lang-option.active {
+            background: var(--text-primary);
+            color: var(--bg-base);
+        }
+
+        /* ========== 按钮系统 ========== */
+        .btn {
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: system-ui, sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: var(--text-primary);
+            color: var(--bg-base);
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-green);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-soft);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-hover);
+        }
+
+        /* ========== 模式选择卡片 ========== */
+        .mode-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-top: 40px;
+        }
+
+        .mode-card {
+            background: var(--bg-card);
+            border: 2px solid var(--border-soft);
+            border-radius: 16px;
+            padding: 40px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .mode-card:hover {
+            border-color: var(--accent-green);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.08);
+        }
+
+        .mode-icon {
+            font-size: 56px;
+            margin-bottom: 20px;
+        }
+
+        .mode-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            font-family: 'Crimson Pro', serif;
+        }
+
+        .mode-desc {
+            font-size: 15px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* ========== 学习页面（来自Fixed版本）========== */
+        .learning-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 32px;
+            background: rgba(255,255,255,0.5);
+            border-bottom: 1px solid var(--border-soft);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(8px);
+        }
+
+        .progress-nav {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .progress-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--border-soft);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .progress-dot.active {
+            background: var(--accent-green);
+            transform: scale(1.4);
+            box-shadow: 0 0 0 6px rgba(94, 109, 98, 0.15);
+        }
+
+        .progress-dot.completed {
+            background: var(--accent-green);
+        }
+
+        .progress-emoji {
+            position: absolute;
+            top: -32px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 20px;
+        }
+
+        .progress-line {
+            width: 32px;
+            height: 2px;
+            background: var(--border-soft);
+        }
+
+        /* ========== 等级徽章 ========== */
+        .level-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            background: var(--accent-green);
+            color: white;
+        }
+
+        .time-estimate {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(94, 109, 98, 0.1);
+            border-radius: 8px;
+            font-size: 13px;
+            color: var(--accent-green);
+            font-weight: 600;
+        }
+
+        /* ========== 学习内容区 ========== */
+        .learning-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .content-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-soft);
+            border-radius: 16px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+        }
+
+        .section-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            font-family: 'Crimson Pro', serif;
+            color: var(--accent-green);
+        }
+
+        /* ========== 输入框 ========== */
+        textarea, input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 20px;
+            border: 1px solid var(--border-soft);
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 16px;
+            line-height: 1.8;
+            background: white;
+            color: var(--text-primary);
+            transition: all 0.3s;
+            resize: vertical;
+        }
+
+        textarea:focus, input:focus {
+            outline: none;
+            border-color: var(--accent-green);
+            box-shadow: 0 0 0 4px rgba(94, 109, 98, 0.08);
+        }
+
+        .input-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        /* ========== Markdown 内容 ========== */
+        .markdown-content {
+            line-height: 1.9;
+            color: var(--text-primary);
+        }
+
+        .markdown-content h1 {
+            font-size: 2rem;
+            margin: 1.5rem 0 1rem;
+            font-weight: 700;
+            color: var(--accent-green);
+        }
+
+        .markdown-content h2 {
+            font-size: 1.75rem;
+            margin: 1.5rem 0 1rem;
+            font-weight: 700;
+            color: var(--accent-green);
+        }
+
+        .markdown-content h3 {
+            font-size: 1.5rem;
+            margin: 1.25rem 0 0.75rem;
+            font-weight: 600;
+        }
+
+        .markdown-content p {
+            margin: 1rem 0;
+        }
+
+        .markdown-content ul, .markdown-content ol {
+            margin: 1rem 0;
+            padding-left: 2rem;
+        }
+
+        .markdown-content li {
+            margin: 0.5rem 0;
+        }
+
+        .markdown-content strong {
+            font-weight: 600;
+            color: var(--accent-green);
+        }
+
+        .markdown-content em {
+            font-style: italic;
+            color: var(--text-secondary);
+        }
+
+        .markdown-content code {
+            background: var(--bg-hover);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .markdown-content hr {
+            border: none;
+            border-top: 2px solid var(--border-soft);
+            margin: 2rem 0;
+        }
+
+        /* ========== 复习卡片 ========== */
+        .flashcard-container {
+            max-width: 600px;
+            margin: 60px auto;
+        }
+
+        .flashcard {
+            background: white;
+            border: 1px solid var(--border-soft);
+            border-radius: 20px;
+            padding: 48px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+
+        .flashcard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .flashcard-type {
+            font-size: 11px;
+            font-weight: 600;
+            background: var(--bg-hover);
+            padding: 6px 12px;
+            border-radius: 6px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .flashcard-audio {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid var(--border-soft);
+            background: transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .flashcard-audio:hover {
+            border-color: var(--accent-green);
+            background: rgba(94, 109, 98, 0.1);
+        }
+
+        .flashcard-meaning {
+            font-size: 24px;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+            font-style: italic;
+            line-height: 1.6;
+        }
+
+        .flashcard-input {
+            width: 100%;
+            padding: 20px;
+            font-size: 20px;
+            text-align: center;
+            border: 2px solid var(--border-soft);
+            border-radius: 12px;
+            margin-bottom: 24px;
+            font-family: 'Crimson Pro', serif;
+        }
+
+        .memory-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+            margin-top: 24px;
+        }
+
+        .memory-buttons.show {
+            opacity: 1;
+        }
+
+        .memory-btn {
+            flex: 1;
+            padding: 16px 24px;
+            border-radius: 10px;
+            border: 2px solid;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .memory-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+        }
+
+        .memory-btn.proficient {
+            border-color: #10B981;
+            color: #10B981;
+        }
+
+        .memory-btn.proficient:hover {
+            background: #10B981;
+            color: white;
+        }
+
+        .memory-btn.hesitant {
+            border-color: #F59E0B;
+            color: #F59E0B;
+        }
+
+        .memory-btn.hesitant:hover {
+            background: #F59E0B;
+            color: white;
+        }
+
+        .memory-btn.forgotten {
+            border-color: var(--accent-warm);
+            color: var(--accent-warm);
+        }
+
+        .memory-btn.forgotten:hover {
+            background: var(--accent-warm);
+            color: white;
+        }
+
+        /* ========== API配置 ========== */
+        .api-setup {
+            background: #FFF9E6;
+            border: 2px dashed var(--accent-gold);
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 32px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .warning-badge {
+            display: inline-block;
+            background: var(--accent-gold);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        /* ========== 加载与动画 ========== */
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid var(--border-soft);
+            border-top-color: var(--text-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 60px auto;
+        }
+
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
-        .spinner {
-            animation: spin 1s linear infinite;
+
+        .fade-in {
+            animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ========== Toast 通知 ========== */
+        .toast {
+            position: fixed;
+            bottom: 32px;
+            right: 32px;
+            background: var(--text-primary);
+            color: var(--bg-base);
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            z-index: 1000;
+            animation: slideIn 0.3s;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* ========== 工具类 ========== */
+        .hidden { display: none !important; }
+        .text-center { text-align: center; }
+        .mt-20 { margin-top: 20px; }
+        .mb-20 { margin-bottom: 20px; }
+        .flex { display: flex; }
+        .flex-col { flex-direction: column; }
+        .items-center { align-items: center; }
+        .justify-center { justify-content: center; }
+        .justify-between { justify-content: space-between; }
+        .gap-12 { gap: 12px; }
+
+        /* ========== 响应式 ========== */
+        @media (max-width: 768px) {
+            .mode-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .learning-header {
+                flex-direction: column;
+                gap: 16px;
+                padding: 16px;
+            }
+            
+            .content-card {
+                padding: 24px;
+            }
+            
+            .flashcard {
+                padding: 32px 24px;
+            }
         }
     </style>
 </head>
-<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
-
-    <div id="app" class="p-6">
-        <div class="max-w-4xl mx-auto">
-            <!-- Header -->
-            <div class="bg-white rounded-2xl shadow-xl p-8 mb-6">
-                <div class="flex items-center gap-3 mb-4">
-                    <svg class="w-10 h-10 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-                    </svg>
-                    <h1 class="text-3xl font-bold text-gray-800">DALF C1/C2 学习助手</h1>
-                </div>
-                <p class="text-gray-600">
-                    专业的法语考试备考工具 • AI智能辅导 🎓
-                </p>
-            </div>
-
-            <!-- Progress Steps -->
-            <div id="progress" class="bg-white rounded-2xl shadow-xl p-6 mb-6">
-                <div class="flex justify-between items-center">
-                    <div class="flex items-center">
-                        <div class="flex flex-col items-center step-item" data-step="0">
-                            <div class="w-12 h-12 rounded-full flex items-center justify-center mb-2 bg-indigo-600 text-white step-circle">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-                                </svg>
-                            </div>
-                            <span class="text-xs font-medium text-gray-700 text-center">输入文章</span>
-                        </div>
-                        <svg class="w-6 h-6 mx-2 text-gray-300 step-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                        </svg>
-                    </div>
-                    <div class="flex items-center">
-                        <div class="flex flex-col items-center step-item opacity-40" data-step="1">
-                            <div class="w-12 h-12 rounded-full flex items-center justify-center mb-2 bg-gray-200 text-gray-500 step-circle">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
-                                </svg>
-                            </div>
-                            <span class="text-xs font-medium text-gray-700 text-center">词块学习</span>
-                        </div>
-                        <svg class="w-6 h-6 mx-2 text-gray-300 step-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                        </svg>
-                    </div>
-                    <div class="flex items-center">
-                        <div class="flex flex-col items-center step-item opacity-40" data-step="2">
-                            <div class="w-12 h-12 rounded-full flex items-center justify-center mb-2 bg-gray-200 text-gray-500 step-circle">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                            </div>
-                            <span class="text-xs font-medium text-gray-700 text-center">挖空练习</span>
-                        </div>
-                        <svg class="w-6 h-6 mx-2 text-gray-300 step-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                        </svg>
-                    </div>
-                    <div class="flex items-center">
-                        <div class="flex flex-col items-center step-item opacity-40" data-step="3">
-                            <div class="w-12 h-12 rounded-full flex items-center justify-center mb-2 bg-gray-200 text-gray-500 step-circle">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                            </div>
-                            <span class="text-xs font-medium text-gray-700 text-center">AI批改</span>
-                        </div>
-                        <svg class="w-6 h-6 mx-2 text-gray-300 step-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                        </svg>
-                    </div>
-                    <div class="flex flex-col items-center step-item opacity-40" data-step="4">
-                        <div class="w-12 h-12 rounded-full flex items-center justify-center mb-2 bg-gray-200 text-gray-500 step-circle">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                            </svg>
-                        </div>
-                        <span class="text-xs font-medium text-gray-700 text-center">快速复习</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Main Content -->
-            <div class="bg-white rounded-2xl shadow-xl p-8" id="main-content">
-                <!-- 内容将由JavaScript动态生成 -->
-            </div>
-
-            <!-- Footer -->
-            <div class="mt-6 text-center text-gray-600 text-sm">
-                <p>💡 基于 Claude AI • 专为DALF C1/C2考生设计</p>
-                <p class="mt-2">🔒 您的API Key安全存储在Cloudflare Worker中</p>
+<body>
+    <div class="container">
+        <!-- 头部导航 -->
+        <div class="header">
+            <div class="logo">DALF Rédacteur Pro</div>
+            <div class="lang-switch">
+                <button class="lang-option active" onclick="setLanguage('zh')" data-lang="zh">中文</button>
+                <button class="lang-option" onclick="setLanguage('en')" data-lang="en">English</button>
+                <button class="lang-option" onclick="setLanguage('fr')" data-lang="fr">Français</button>
             </div>
         </div>
+
+        <!-- 主内容区 -->
+        <div id="app"></div>
     </div>
 
     <script>
-        // ========================================
-        // 🔧 配置区域 - 请修改这里！
-        // ========================================
-        const WORKER_URL = 'https://delfdalfassistant.yifan6760.workers.dev/';
-        // 👆 改成你的Cloudflare Worker URL！
-        
-        // ========================================
-        // 系统Prompt
-        // ========================================
-        const SYSTEM_PROMPT = `你是一位教授DELF DALF的法语教师，你有20年的教龄，同时兼任DELF DALF考官。
-
-你的角色特点：
-- 注重逻辑，引导学生搭建表达逻辑，使思路层层深入
-- 注重表达的地道性和语言的严谨性
-- 在出现错误时，积极耐心地引导学生自查和纠正
-- 多多鼓励学生，使用emoji，鼓励风格可以适当夸张;
-
-        // ========================================
-        // 状态管理
-        // ========================================
-        let currentStep = 0;
-        let articleText = '';
-        let vocabContent = '';
-        let clozeContent = '';
-        let userAnswers = '';
-
-        // ========================================
-        // 初始化
-        // ========================================
-        document.addEventListener('DOMContentLoaded', () => {
-            renderStep0();
-            updateProgress();
+        // ==================== 完整翻译配置 ====================
+        const TRANSLATIONS = {
+            zh: {
+                // 导航
+                appTitle: 'DALF 智能写作工作室',
+                
+                // 模式选择
+                selectMode: '选择学习模式',
+                learningMode: '学习模式',
+                learningDesc: '从文章中学习词块、句式，完成练习和独立输出',
+                reviewMode: '复习模式',
+                reviewDesc: '复习已学词汇，使用遗忘曲线智能推送',
+                importMode: '导入复习',
+                importDesc: '自定义导入词汇进行复习',
+                
+                // API设置
+                apiSetup: 'API 配置',
+                apiKeyLabel: '请输入 Anthropic API Key',
+                apiKeyPlaceholder: 'sk-ant-api03-...',
+                saveApiKey: '保存',
+                getApiKey: '获取密钥',
+                
+                // 学习阶段
+                phase0: '准备阶段',
+                phase1: '阶段一：词汇学习',
+                phase2: '阶段二：综合练习',
+                phase3: '阶段三：智能反馈',
+                phase4: '阶段四：闪卡复习',
+                
+                // 按钮
+                back: '返回',
+                start: '开始学习',
+                next: '下一步',
+                submit: '提交答案',
+                checkAnswer: '查看答案',
+                continue: '继续',
+                finish: '完成',
+                
+                // 输入
+                selectLevel: '选择你的法语等级',
+                inputArticle: '粘贴文章或听力转录内容',
+                wordCount: '字数',
+                estimatedTime: '预计学习时间',
+                minutes: '分钟',
+                
+                // 等级描述
+                levelDesc: {
+                    A1: '入门级 - 基础词汇和简单句型',
+                    A2: '基础级 - 日常对话能力',
+                    B1: '进阶级 - 独立运用语言',
+                    B2: '高阶级 - 流利表达观点',
+                    C1: '精通级 - 高级词汇和复杂结构',
+                    C2: '母语级 - 接近母语水平'
+                },
+                
+                // 复习
+                todayReview: '今日待复习',
+                words: '个词',
+                startReview: '开始复习',
+                proficient: '熟练',
+                hesitant: '犹豫',
+                forgotten: '忘记',
+                typeWord: '请拼写这个词',
+                
+                // 导入
+                importFormat: '格式说明',
+                importExample: '例如',
+                importBtn: '开始导入',
+                
+                // 提示
+                loading: '生成中...',
+                generating: '正在生成学习材料...',
+                success: '成功',
+                error: '错误',
+                saved: '已保存',
+                noApiKey: '请先设置 API Key',
+                noInput: '请输入文章内容',
+                noDueReviews: '暂无待复习内容',
+                allDone: '今日复习已完成',
+                downloadPdf: '下载PDF',
+                saveRecord: '保存练习记录',
+                recordSaved: '练习记录已保存',
+                pdfGenerating: '生成PDF中...'
+            },
             
-            // 检查配置
-            if (WORKER_URL.includes('https://delfdalf-preparation-assistant.yifan6760.workers.dev')) {
-                document.getElementById('config-notice').style.display = 'block';
-            } else {
-                document.getElementById('config-notice').style.display = 'none';
+            en: {
+                appTitle: 'DALF Intelligent Writing Studio',
+                
+                selectMode: 'Select Learning Mode',
+                learningMode: 'Learning Mode',
+                learningDesc: 'Learn vocabulary chunks and sentence patterns from articles',
+                reviewMode: 'Review Mode',
+                reviewDesc: 'Review learned vocabulary with spaced repetition',
+                importMode: 'Import Review',
+                importDesc: 'Import custom vocabulary for review',
+                
+                apiSetup: 'API Configuration',
+                apiKeyLabel: 'Enter Anthropic API Key',
+                apiKeyPlaceholder: 'sk-ant-api03-...',
+                saveApiKey: 'Save',
+                getApiKey: 'Get Key',
+                
+                phase0: 'Preparation',
+                phase1: 'Phase 1: Vocabulary',
+                phase2: 'Phase 2: Synthesis',
+                phase3: 'Phase 3: Feedback',
+                phase4: 'Phase 4: Flashcards',
+                
+                back: 'Back',
+                start: 'Start Learning',
+                next: 'Next',
+                submit: 'Submit',
+                checkAnswer: 'Check Answer',
+                continue: 'Continue',
+                finish: 'Finish',
+                
+                selectLevel: 'Select Your French Level',
+                inputArticle: 'Paste article or transcript here',
+                wordCount: 'Words',
+                estimatedTime: 'Estimated Time',
+                minutes: 'mins',
+                
+                levelDesc: {
+                    A1: 'Beginner - Basic vocabulary and simple sentences',
+                    A2: 'Elementary - Everyday conversations',
+                    B1: 'Intermediate - Independent language use',
+                    B2: 'Upper Intermediate - Fluent expression',
+                    C1: 'Advanced - Complex structures',
+                    C2: 'Proficient - Near-native level'
+                },
+                
+                todayReview: 'Due Today',
+                words: 'words',
+                startReview: 'Start Review',
+                proficient: 'Proficient',
+                hesitant: 'Hesitant',
+                forgotten: 'Forgotten',
+                typeWord: 'Type the word',
+                
+                importFormat: 'Format',
+                importExample: 'Example',
+                importBtn: 'Import',
+                
+                loading: 'Generating...',
+                generating: 'Generating learning materials...',
+                success: 'Success',
+                error: 'Error',
+                saved: 'Saved',
+                noApiKey: 'Please set API Key first',
+                noInput: 'Please input text',
+                noDueReviews: 'No reviews due',
+                allDone: 'All reviews completed',
+                downloadPdf: 'Download PDF',
+                saveRecord: 'Save Practice Record',
+                recordSaved: 'Record saved',
+                pdfGenerating: 'Generating PDF...'
+            },
+            
+            fr: {
+                appTitle: 'DALF Studio d\'Écriture Intelligent',
+                
+                selectMode: 'Choisissez le mode d\'apprentissage',
+                learningMode: 'Mode Apprentissage',
+                learningDesc: 'Apprendre les expressions et structures à partir d\'articles',
+                reviewMode: 'Mode Révision',
+                reviewDesc: 'Réviser le vocabulaire avec la courbe d\'oubli',
+                importMode: 'Importer Révision',
+                importDesc: 'Importer du vocabulaire personnalisé',
+                
+                apiSetup: 'Configuration API',
+                apiKeyLabel: 'Entrez votre clé API Anthropic',
+                apiKeyPlaceholder: 'sk-ant-api03-...',
+                saveApiKey: 'Sauvegarder',
+                getApiKey: 'Obtenir une clé',
+                
+                phase0: 'Préparation',
+                phase1: 'Étape 1 : Vocabulaire',
+                phase2: 'Étape 2 : Synthèse',
+                phase3: 'Étape 3 : Retour',
+                phase4: 'Étape 4 : Révision',
+                
+                back: 'Retour',
+                start: 'Commencer',
+                next: 'Suivant',
+                submit: 'Soumettre',
+                checkAnswer: 'Voir la réponse',
+                continue: 'Continuer',
+                finish: 'Terminer',
+                
+                selectLevel: 'Sélectionnez votre niveau',
+                inputArticle: 'Collez l\'article ou la transcription ici',
+                wordCount: 'Mots',
+                estimatedTime: 'Temps estimé',
+                minutes: 'min',
+                
+                levelDesc: {
+                    A1: 'Débutant - Vocabulaire de base',
+                    A2: 'Élémentaire - Conversations quotidiennes',
+                    B1: 'Intermédiaire - Usage indépendant',
+                    B2: 'Intermédiaire supérieur - Expression fluide',
+                    C1: 'Avancé - Structures complexes',
+                    C2: 'Maîtrise - Niveau quasi-natif'
+                },
+                
+                todayReview: 'À réviser aujourd\'hui',
+                words: 'mots',
+                startReview: 'Commencer',
+                proficient: 'Maîtrisé',
+                hesitant: 'Hésitant',
+                forgotten: 'Oublié',
+                typeWord: 'Épelez le mot',
+                
+                importFormat: 'Format',
+                importExample: 'Exemple',
+                importBtn: 'Importer',
+                
+                loading: 'Génération...',
+                generating: 'Génération du matériel...',
+                success: 'Succès',
+                error: 'Erreur',
+                saved: 'Sauvegardé',
+                noApiKey: 'Veuillez d\'abord configurer la clé API',
+                noInput: 'Veuillez saisir le texte',
+                noDueReviews: 'Aucune révision due',
+                allDone: 'Toutes les révisions terminées',
+                downloadPdf: 'Télécharger PDF',
+                saveRecord: 'Sauvegarder la session',
+                recordSaved: 'Session sauvegardée',
+                pdfGenerating: 'Génération du PDF...'
             }
-        });
+        };
 
-        // ========================================
-        // API调用
-        // ========================================
-        async function callClaude(userMessage) {
+        // ==================== 状态管理 ====================
+        class AppState {
+            constructor() {
+                this.currentLang = localStorage.getItem('app_lang') || 'zh';
+                this.apiKey = localStorage.getItem('anthropic_api_key') || '';
+                this.currentMode = null;
+                this.currentPhase = 0;
+                this.userLevel = localStorage.getItem('user_level') || null;
+                this.articleText = '';
+                this.learningData = {
+                    vocabulary: '',
+                    cloze: '',
+                    feedback: '',
+                    flashcards: []
+                };
+                this.reviewSchedule = [];
+                this.loadReviewSchedule();
+            }
+
+            t(key) {
+                const keys = key.split('.');
+                let value = TRANSLATIONS[this.currentLang];
+                for (const k of keys) {
+                    value = value?.[k];
+                }
+                return value || key;
+            }
+
+            setLanguage(lang) {
+                this.currentLang = lang;
+                localStorage.setItem('app_lang', lang);
+            }
+
+            setApiKey(key) {
+                this.apiKey = key;
+                localStorage.setItem('anthropic_api_key', key);
+            }
+
+            setLevel(level) {
+                this.userLevel = level;
+                localStorage.setItem('user_level', level);
+            }
+
+            loadReviewSchedule() {
+                const data = localStorage.getItem('review_schedule');
+                if (data) {
+                    try {
+                        this.reviewSchedule = JSON.parse(data);
+                    } catch (e) {
+                        this.reviewSchedule = [];
+                    }
+                }
+            }
+
+            saveReviewSchedule() {
+                localStorage.setItem('review_schedule', JSON.stringify(this.reviewSchedule));
+            }
+
+            getTodayReviews() {
+                const today = new Date().toISOString().split('T')[0];
+                return this.reviewSchedule.filter(r => r.reviewDate === today);
+            }
+
+            calculateEstimatedTime(text) {
+                if (!text || !this.userLevel) return 15;
+                
+                const wordCount = text.trim().split(/\s+/).length;
+                const baseRates = {
+                    A1: 8, A2: 6, B1: 5, B2: 4, C1: 3, C2: 2.5
+                };
+                
+                const rate = baseRates[this.userLevel] || 5;
+                let time = Math.ceil((wordCount / 100) * rate);
+                time += 13; // 练习和复习时间
+                
+                return Math.max(8, Math.min(60, time));
+            }
+        }
+
+        const state = new AppState();
+
+        // ==================== 配置区（部署时填写）====================
+        const CONFIG = {
+            // 部署Cloudflare Worker后，把Worker地址填在这里
+            // 例如: 'https://dalf-proxy.yourname.workers.dev'
+            WORKER_URL: '',
+            // Supabase配置（去supabase.com创建项目后填写）
+            SUPABASE_URL: '',
+            SUPABASE_ANON_KEY: '',
+        };
+
+        // ==================== Supabase 初始化 ====================
+        let supabaseClient = null;
+        function initSupabase() {
+            if (CONFIG.SUPABASE_URL && CONFIG.SUPABASE_ANON_KEY && !supabaseClient) {
+                supabaseClient = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+            }
+        }
+
+        async function saveSessionToSupabase(sessionData) {
+            initSupabase();
+            if (!supabaseClient) return; // 未配置则跳过
             try {
-                const response = await fetch(WORKER_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        model: 'claude-sonnet-4-20250514',
-                        max_tokens: 4000,
-                        system: SYSTEM_PROMPT,
-                        messages: [{
-                            role: 'user',
-                            content: userMessage
-                        }]
-                    })
-                });
+                await supabaseClient.from('practice_sessions').insert([sessionData]);
+            } catch (e) {
+                console.warn('Supabase save failed:', e);
+            }
+        }
+
+        // ==================== Claude API ====================
+        async function callClaude(userMessage, systemPrompt) {
+            if (!state.apiKey) {
+                showToast(state.t('noApiKey'));
+                throw new Error('No API Key');
+            }
+
+            const payload = {
+                model: 'claude-sonnet-4-20250514',
+                max_tokens: 4000,
+                system: systemPrompt,
+                messages: [{ role: 'user', content: userMessage }]
+            };
+
+            try {
+                let response;
+
+                if (CONFIG.WORKER_URL) {
+                    // 通过Cloudflare Worker代理（推荐，API Key在后端）
+                    response = await fetch(CONFIG.WORKER_URL + '/api/claude', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                } else {
+                    // 直连（本地调试或未配置Worker时使用）
+                    response = await fetch('https://api.anthropic.com/v1/messages', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'x-api-key': state.apiKey,
+                            'anthropic-version': '2023-06-01'
+                        },
+                        body: JSON.stringify(payload)
+                    });
+                }
 
                 if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || '请求失败');
+                    const error = await response.json();
+                    throw new Error(error.error?.message || 'API Error');
                 }
 
                 const data = await response.json();
-                return data.content.find(c => c.type === 'text')?.text || '生成失败';
+                const text = data.content.find(c => c.type === 'text')?.text || '';
+                return marked.parse(text);
             } catch (error) {
-                console.error('API Error:', error);
+                console.error('Claude API Error:', error);
+                showToast(state.t('error') + ': ' + error.message);
                 throw error;
             }
         }
 
-        // ========================================
-        // 步骤渲染
-        // ========================================
-        function renderStep0() {
-            const content = `
-                <div class="space-y-6">
-                    <div>
-                        <h2 class="text-2xl font-bold text-gray-800 mb-4">📝 第一步：输入法语文章</h2>
-                        <p class="text-gray-600 mb-4">
-                            粘贴一篇法语文章或听力转写文本，AI会帮你提取关键词块、生成练习题，并提供批改反馈！
-                        </p>
-                        <textarea
-                            id="article-input"
-                            class="w-full h-64 p-4 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none"
-                            placeholder="在这里粘贴法语文章... 例如：来自Le Monde、Le Figaro的文章，或者DALF听力的转写文本"
-                        ></textarea>
-                    </div>
-                    <button
-                        onclick="generateVocab()"
-                        class="w-full bg-indigo-600 text-white py-4 rounded-lg font-semibold hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
-                    >
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
-                        </svg>
-                        开始学习 - 生成词块和句式
-                    </button>
-                </div>
-            `;
-            document.getElementById('main-content').innerHTML = content;
-        }
+        // ==================== System Prompts ====================
+        const SYSTEM_PROMPTS = {
+            vocabulary: `你是专业的DELF/DALF法语教师。学生等级：${state.userLevel}
 
-        function renderStep1() {
-            const content = `
-                <div class="space-y-6">
-                    <div>
-                        <h2 class="text-2xl font-bold text-gray-800 mb-4">📚 词块与句式学习</h2>
-                        <div class="bg-gray-50 p-6 rounded-lg mb-6 max-h-96 overflow-y-auto whitespace-pre-wrap">
-${vocabContent}
-                        </div>
-                    </div>
-                    <div class="flex gap-4">
-                        <button
-                            onclick="goToStep(0)"
-                            class="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-colors"
-                        >
-                            返回修改文章
-                        </button>
-                        <button
-                            onclick="generateCloze()"
-                            class="flex-1 bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
-                        >
-                            下一步：挖空练习
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            `;
-            document.getElementById('main-content').innerHTML = content;
-        }
+请分析文章并提取5-10个关键词汇。
 
-        function renderStep2() {
-            const content = `
-                <div class="space-y-6">
-                    <div>
-                        <h2 class="text-2xl font-bold text-gray-800 mb-4">✍️ 挖空练习</h2>
-                        <div class="bg-gray-50 p-6 rounded-lg mb-6 max-h-64 overflow-y-auto whitespace-pre-wrap">
-${clozeContent}
-                        </div>
-                        <p class="text-gray-600 mb-3">在下方输入你的答案：</p>
-                        <textarea
-                            id="answers-input"
-                            class="w-full h-48 p-4 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none"
-                            placeholder="输入你的答案..."
-                        ></textarea>
-                    </div>
-                    <div class="flex gap-4">
-                        <button
-                            onclick="goToStep(1)"
-                            class="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-colors"
-                        >
-                            返回词块学习
-                        </button>
-                        <button
-                            onclick="generateFeedback()"
-                            class="flex-1 bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
-                        >
-                            提交批改
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            `;
-            document.getElementById('main-content').innerHTML = content;
-        }
+**输出格式（Markdown）**：
 
-        function renderStep3(feedback) {
-            const content = `
-                <div class="space-y-6">
-                    <div>
-                        <h2 class="text-2xl font-bold text-gray-800 mb-4">✅ AI批改反馈</h2>
-                        <div class="bg-gradient-to-r from-green-50 to-blue-50 p-6 rounded-lg mb-6 max-h-96 overflow-y-auto whitespace-pre-wrap">
-${feedback}
-                        </div>
-                    </div>
-                    <div class="flex gap-4">
-                        <button
-                            onclick="generateReview()"
-                            class="flex-1 bg-indigo-600 text-white py-4 rounded-lg font-semibold hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
-                        >
-                            下一步：快速复习
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            `;
-            document.getElementById('main-content').innerHTML = content;
-        }
+## 📚 词汇学习
 
-        function renderStep4(review) {
-            const content = `
-                <div class="space-y-6">
-                    <div>
-                        <h2 class="text-2xl font-bold text-gray-800 mb-4">🎴 快速复习 (25分钟)</h2>
-                        <div class="bg-gradient-to-r from-purple-50 to-pink-50 p-6 rounded-lg mb-6 max-h-96 overflow-y-auto whitespace-pre-wrap">
-${review}
-                        </div>
-                    </div>
-                    <div class="flex gap-4">
-                        <button
-                            onclick="resetAll()"
-                            class="flex-1 bg-green-600 text-white py-4 rounded-lg font-semibold hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
-                        >
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
-                            </svg>
-                            学习完成！开始新的文章
-                        </button>
-                    </div>
-                </div>
-            `;
-            document.getElementById('main-content').innerHTML = content;
-        }
+### 1. [词汇] (词性)
+**中文释义**：[翻译]
+**常见搭配**：[3-5个]
+**使用场景**：[正式/口语]
+**近义词**：[2-3个]
+**反义词**：[1-2个]
+**例句**：[来自文章或贴近主题]
 
-        // ========================================
-        // 业务逻辑
-        // ========================================
-        async function generateVocab() {
-            articleText = document.getElementById('article-input').value.trim();
-            if (!articleText) {
-                alert('请先输入法语文章！');
+---
+
+### 2. [词汇2] (词性)
+...
+
+**要求**：
+- ${state.userLevel === 'A1' || state.userLevel === 'A2' ? '只提取最基础的高频词汇' : ''}
+- ${state.userLevel === 'C1' || state.userLevel === 'C2' ? '重点高级表达和复杂结构' : ''}
+- 使用清晰的Markdown格式
+- 每个词汇用 --- 分隔`,
+
+            cloze: `创建综合练习（学生等级：${state.userLevel}）。
+
+**格式**：
+
+## ✍️ 综合练习
+
+### 练习一：填空
+根据上下文填写正确的词汇：
+
+1. [句子] ______ [句子续]
+2. [句子] ______ [句子续]
+
+### 练习二：句子改写
+将以下句子按要求改写：
+
+1. 原句：[句子]
+   要求：[改为疑问句/否定句等]
+
+### 练习三：写作任务
+[简短写作题目，50-100词]
+
+**要求**：
+- ${state.userLevel === 'A1' || state.userLevel === 'A2' ? '简单句式，基础词汇' : ''}
+- ${state.userLevel === 'C1' || state.userLevel === 'C2' ? '使用复杂结构和高级表达' : ''}`,
+
+            feedback: `批改学生练习（等级：${state.userLevel}）。
+
+**格式**：
+
+## ✅ 优点
+- [具体表扬1]
+- [具体表扬2]
+
+## ⚠️ 需要改进
+### 错误1
+**原句**：[学生写的]
+**正确**：[修改后]
+**解释**：[为什么]
+
+### 错误2
+...
+
+## 💡 改进建议
+[具体建议]
+
+## 📊 评分
+- 内容：[X]/5
+- 语法：[X]/5
+- 词汇：[X]/5
+
+**总评**：[鼓励性总结]`
+        };
+
+        // ==================== UI 渲染 ====================
+        function render() {
+            const app = document.getElementById('app');
+
+            if (!state.apiKey) {
+                app.innerHTML = renderApiSetup();
                 return;
             }
 
-            showLoading('正在生成词块学习内容...');
+            if (!state.currentMode) {
+                app.innerHTML = renderModeSelection();
+                return;
+            }
 
+            if (state.currentMode === 'learning') {
+                if (state.currentPhase === 0) {
+                    app.innerHTML = renderLevelSelection();
+                } else {
+                    app.innerHTML = renderLearningFlow();
+                }
+            } else if (state.currentMode === 'review') {
+                app.innerHTML = renderReviewMode();
+            } else if (state.currentMode === 'import') {
+                app.innerHTML = renderImportMode();
+            }
+        }
+
+        function renderApiSetup() {
+            return `
+                <div class="fade-in">
+                    <div class="api-setup">
+                        <span class="warning-badge">⚙️ ${state.t('apiSetup')}</span>
+                        <h2 style="font-size: 24px; margin-bottom: 12px; font-weight: 700;">${state.t('apiKeyLabel')}</h2>
+                        <input type="password" id="api-key-input" placeholder="${state.t('apiKeyPlaceholder')}" value="${state.apiKey}">
+                        <div class="flex gap-12 mt-20">
+                            <button class="btn btn-primary" onclick="saveApiKey()">${state.t('saveApiKey')}</button>
+                            <a href="https://console.anthropic.com/settings/keys" target="_blank" class="btn btn-secondary" style="text-decoration: none;">${state.t('getApiKey')}</a>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderModeSelection() {
+            const todayReviews = state.getTodayReviews();
+            
+            return `
+                <div class="fade-in">
+                    <h1 class="text-center" style="font-size: 42px; font-weight: 700; margin-bottom: 16px; font-family: 'Crimson Pro', serif;">
+                        ${state.t('appTitle')}
+                    </h1>
+                    <p class="text-center" style="font-size: 16px; color: var(--text-secondary); margin-bottom: 60px;">
+                        ${state.t('selectMode')}
+                    </p>
+                    
+                    <div class="mode-grid">
+                        <div class="mode-card" onclick="selectMode('learning')">
+                            <div class="mode-icon">📚</div>
+                            <div class="mode-title">${state.t('learningMode')}</div>
+                            <div class="mode-desc">${state.t('learningDesc')}</div>
+                        </div>
+                        
+                        <div class="mode-card" onclick="selectMode('review')">
+                            <div class="mode-icon">🔄</div>
+                            <div class="mode-title">${state.t('reviewMode')}</div>
+                            <div class="mode-desc">${state.t('reviewDesc')}</div>
+                            ${todayReviews.length > 0 ? `
+                                <div style="margin-top: 20px; padding: 12px; background: rgba(166, 123, 123, 0.1); border-radius: 8px; color: var(--accent-warm); font-weight: 600; font-size: 14px;">
+                                    ${state.t('todayReview')}: ${todayReviews.length} ${state.t('words')}
+                                </div>
+                            ` : ''}
+                        </div>
+                        
+                        <div class="mode-card" onclick="selectMode('import')">
+                            <div class="mode-icon">📥</div>
+                            <div class="mode-title">${state.t('importMode')}</div>
+                            <div class="mode-desc">${state.t('importDesc')}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderLevelSelection() {
+            const estimatedTime = state.calculateEstimatedTime(state.articleText);
+            
+            return `
+                <div class="fade-in">
+                    <div class="learning-content">
+                        ${!state.userLevel ? `
+                            <div class="content-card text-center">
+                                <h2 class="section-title">${state.t('selectLevel')}</h2>
+                                <div class="mode-grid" style="margin-top: 40px;">
+                                    ${['A1', 'A2', 'B1', 'B2', 'C1', 'C2'].map(level => `
+                                        <div class="mode-card" onclick="selectLevel('${level}')" style="padding: 32px;">
+                                            <div style="font-size: 36px; font-weight: 700; margin-bottom: 12px; font-family: 'Crimson Pro', serif;">${level}</div>
+                                            <div style="font-size: 13px; color: var(--text-secondary);">${state.t('levelDesc.' + level)}</div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : `
+                            <div class="content-card">
+                                <div class="flex justify-between items-center mb-20">
+                                    <div class="flex items-center gap-12">
+                                        <span class="level-badge">${state.userLevel}</span>
+                                        <span class="time-estimate">
+                                            <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                            </svg>
+                                            ${state.t('estimatedTime')}: ${estimatedTime} ${state.t('minutes')}
+                                        </span>
+                                    </div>
+                                    <button class="btn btn-secondary" onclick="state.setLevel(null); render();">
+                                        ${state.t('back')}
+                                    </button>
+                                </div>
+                                
+                                <label class="input-label">${state.t('inputArticle')}</label>
+                                <textarea id="article-input" style="min-height: 300px;" oninput="updateWordCount()">${state.articleText}</textarea>
+                                
+                                <div class="flex justify-between items-center mt-20">
+                                    <span id="word-count" style="color: var(--text-secondary); font-size: 14px;">0 ${state.t('wordCount')}</span>
+                                    <div class="flex gap-12">
+                                        <button class="btn btn-secondary" onclick="backToModes()">${state.t('back')}</button>
+                                        <button class="btn btn-primary" onclick="startLearning()">${state.t('start')}</button>
+                                    </div>
+                                </div>
+                            </div>
+                        `}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderLearningFlow() {
+            const phases = ['phase0', 'phase1', 'phase2', 'phase3', 'phase4'];
+            const emojis = ['📄', '📚', '✍️', '💬', '🎴'];
+            
+            return `
+                <div class="fade-in">
+                    <!-- 学习页面头部 -->
+                    <div class="learning-header">
+                        <div class="progress-nav">
+                            ${emojis.map((emoji, i) => `
+                                <div style="position: relative;">
+                                    <div class="progress-dot ${i === state.currentPhase ? 'active' : ''} ${i < state.currentPhase ? 'completed' : ''}">
+                                        ${i <= state.currentPhase ? `<div class="progress-emoji">${emoji}</div>` : ''}
+                                    </div>
+                                </div>
+                                ${i < emojis.length - 1 ? '<div class="progress-line"></div>' : ''}
+                            `).join('')}
+                        </div>
+                        
+                        <div class="flex items-center gap-12">
+                            <span class="level-badge">${state.userLevel}</span>
+                            <button class="btn btn-secondary" onclick="backToPhase0()">${state.t('back')}</button>
+                        </div>
+                    </div>
+                    
+                    <!-- 学习内容 -->
+                    <div class="learning-content">
+                        <div id="phase-content"></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderReviewMode() {
+            const todayReviews = state.getTodayReviews();
+            
+            if (todayReviews.length === 0) {
+                return `
+                    <div class="fade-in text-center" style="padding: 100px 20px;">
+                        <div style="font-size: 64px; margin-bottom: 24px;">✅</div>
+                        <h2 style="font-size: 32px; font-weight: 700; margin-bottom: 16px;">${state.t('allDone')}</h2>
+                        <p style="color: var(--text-secondary); font-size: 16px; margin-bottom: 40px;">${state.t('noDueReviews')}</p>
+                        <button class="btn btn-secondary" onclick="backToModes()">${state.t('back')}</button>
+                    </div>
+                `;
+            }
+            
+            const card = todayReviews[0];
+            return renderFlashcard(card);
+        }
+
+        function renderImportMode() {
+            return `
+                <div class="fade-in">
+                    <div class="learning-content">
+                        <div class="content-card">
+                            <h2 class="section-title">${state.t('importMode')}</h2>
+                            
+                            <p style="margin-bottom: 12px; color: var(--text-secondary);">
+                                <strong>${state.t('importFormat')}:</strong> ${state.t('importExample')}
+                            </p>
+                            <p style="font-family: monospace; color: var(--text-secondary); margin-bottom: 20px;">
+                                préconiser | 提倡<br>
+                                quantifier | 量化<br>
+                                équilibre | 平衡
+                            </p>
+                            
+                            <textarea id="import-input" placeholder="préconiser | 提倡&#10;quantifier | 量化" style="min-height: 300px;"></textarea>
+                            
+                            <div class="flex justify-between mt-20">
+                                <button class="btn btn-secondary" onclick="backToModes()">${state.t('back')}</button>
+                                <button class="btn btn-primary" onclick="importVocabulary()">${state.t('importBtn')}</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderFlashcard(card) {
+            return `
+                <div class="flashcard-container fade-in">
+                    <div class="flashcard">
+                        <div class="flashcard-header">
+                            <span class="flashcard-type">${card.type || 'VOCABULAIRE'}</span>
+                            <button class="flashcard-audio" onclick="playAudio('${card.word}')">
+                                <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
+                                </svg>
+                            </button>
+                        </div>
+                        
+                        <div class="flashcard-meaning">"${card.meaning}"</div>
+                        
+                        <input type="text" id="flashcard-input" class="flashcard-input" placeholder="${state.t('typeWord')}..." onkeydown="checkFlashcard(event, '${card.word}')">
+                        
+                        <div id="memory-buttons" class="memory-buttons">
+                            <button class="memory-btn proficient" onclick="recordMemory(3, '${card.word}')">${state.t('proficient')}</button>
+                            <button class="memory-btn hesitant" onclick="recordMemory(2, '${card.word}')">${state.t('hesitant')}</button>
+                            <button class="memory-btn forgotten" onclick="recordMemory(1, '${card.word}')">${state.t('forgotten')}</button>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-20">
+                        <button class="btn btn-secondary" onclick="backToModes()">${state.t('back')}</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ==================== 功能函数 ====================
+        function setLanguage(lang) {
+            state.setLanguage(lang);
+            
+            document.querySelectorAll('.lang-option').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('data-lang') === lang) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            render();
+        }
+
+        function saveApiKey() {
+            const input = document.getElementById('api-key-input');
+            if (input && input.value.trim()) {
+                state.setApiKey(input.value.trim());
+                showToast(state.t('saved'));
+                render();
+            }
+        }
+
+        function selectMode(mode) {
+            state.currentMode = mode;
+            state.currentPhase = 0;
+            render();
+        }
+
+        function backToModes() {
+            state.currentMode = null;
+            state.currentPhase = 0;
+            render();
+        }
+
+        function selectLevel(level) {
+            state.setLevel(level);
+            render();
+        }
+
+        function backToPhase0() {
+            state.currentPhase = 0;
+            render();
+        }
+
+        function updateWordCount() {
+            const input = document.getElementById('article-input');
+            if (input) {
+                state.articleText = input.value;
+                const count = input.value.trim().split(/\s+/).filter(w => w.length > 0).length;
+                const counter = document.getElementById('word-count');
+                if (counter) {
+                    counter.textContent = `${count} ${state.t('wordCount')}`;
+                }
+            }
+        }
+
+        async function startLearning() {
+            const input = document.getElementById('article-input');
+            state.articleText = input.value.trim();
+            
+            if (!state.articleText) {
+                showToast(state.t('noInput'));
+                return;
+            }
+            
+            state.currentPhase = 1;
+            render();
+            
+            // 显示加载
+            document.getElementById('phase-content').innerHTML = `
+                <div class="text-center" style="padding: 100px 0;">
+                    <div class="spinner"></div>
+                    <p style="margin-top: 24px; color: var(--text-secondary);">${state.t('generating')}</p>
+                </div>
+            `;
+            
             try {
-                const prompt = `现在请分析以下法语文章，提取关键词块（主题词、可迁移词、拓展搭配）。请使用法语进行，词汇解释可以使用中文，其他全部使用法语进行。
+                const prompt = SYSTEM_PROMPTS.vocabulary.replace('${state.userLevel}', state.userLevel);
+                const result = await callClaude(
+                    `请分析以下文章：\n\n${state.articleText}`,
+                    prompt
+                );
+                
+                state.learningData.vocabulary = result;
+                
+                // 渲染结果
+                document.getElementById('phase-content').innerHTML = `
+                    <div class="content-card">
+                        <h2 class="section-title">${state.t('phase1')}</h2>
+                        <div class="markdown-content">
+                            ${result}
+                        </div>
+                        <div class="text-center mt-20">
+                            <button class="btn btn-primary" onclick="nextPhase()">${state.t('next')}</button>
+                        </div>
+                    </div>
+                `;
+            } catch (e) {
+                showToast(state.t('error'));
+                backToPhase0();
+            }
+        }
 
-对每个词块，请提供：
-- 词性
-- 中文翻译
-- 常见搭配(collocations)
-- 语域(正式/口语)
-- 近义词
-- 反义词
-- 例句
-
-然后生成练习题：选词填空（不超过8题）和句子翻译（不超过4题）。
-
-文章内容：
-${articleText}
-
-请用清晰的格式输出，使用emoji让内容更生动！🎯`;
-
-                vocabContent = await callClaude(prompt);
-                currentStep = 1;
-                updateProgress();
-                renderStep1();
-            } catch (error) {
-                alert('生成失败：' + error.message);
-                hideLoading();
+        async function nextPhase() {
+            if (state.currentPhase < 4) {
+                state.currentPhase++;
+                render();
+                
+                // 根据当前阶段生成内容
+                if (state.currentPhase === 2) {
+                    await generateCloze();
+                } else if (state.currentPhase === 3) {
+                    // 等待用户提交答案后生成反馈
+                    showPhaseContent();
+                } else if (state.currentPhase === 4) {
+                    await generateFlashcards();
+                }
             }
         }
 
         async function generateCloze() {
-            showLoading('正在生成挖空练习...');
-
-            try {
-                const prompt = `请为以下文章生成挖空练习（résumé à trous）。
-
-挖空分为两个等级：
-- Niveau 1 (30%)：事实信息（人名、日期、数字、专有名词）、逻辑词
-- Niveau 2 (70%)：主题词、易错词、时态语态变位
-
-在挖空前，先给出"预习提示"，引导用户回忆之前学过的词块和句式。
-
-文章内容：
-${articleText}
-
-请生成15-20个挖空，格式清晰，用emoji让练习更有趣！✨`;
-
-                clozeContent = await callClaude(prompt);
-                currentStep = 2;
-                updateProgress();
-                renderStep2();
-            } catch (error) {
-                alert('生成失败：' + error.message);
-                hideLoading();
-            }
-        }
-
-        async function generateFeedback() {
-            userAnswers = document.getElementById('answers-input').value.trim();
-            if (!userAnswers) {
-                alert('请先填写你的答案！');
-                return;
-            }
-
-            showLoading('AI正在批改中...');
-
-            try {
-                const prompt = `学生完成了挖空练习，请批改并给出详细反馈。
-
-批改要求：
-1. 分析结构完整性
-2. 修改语法错误，并提供巩固练习
-3. 提供优化表达建议
-4. 给出优化后的完整版本
-5. 打分（内容、结构、语言准确性、语言多样性、连贯性，各0-5分）
-
-练习题：
-${clozeContent}
-
-学生答案：
-${userAnswers}
-
-请给出详细、鼓励性的批改反馈！记得多用emoji鼓励学生！💪`;
-
-                const feedback = await callClaude(prompt);
-                currentStep = 3;
-                updateProgress();
-                renderStep3(feedback);
-            } catch (error) {
-                alert('生成失败：' + error.message);
-                hideLoading();
-            }
-        }
-
-        async function generateReview() {
-            showLoading('正在生成复习材料...');
-
-            try {
-                const prompt = `请基于之前学习的内容，生成快速复习材料（25分钟内能完成）：
-
-1. 所学词块的中法互译（flashcards形式）
-2. 观点再现练习（提供思路链和关键词引导）
-
-原文：
-${articleText}
-
-请让复习材料简洁高效，用emoji让学习更有趣！🎴`;
-
-                const review = await callClaude(prompt);
-                currentStep = 4;
-                updateProgress();
-                renderStep4(review);
-            } catch (error) {
-                alert('生成失败：' + error.message);
-                hideLoading();
-            }
-        }
-
-        function resetAll() {
-            currentStep = 0;
-            articleText = '';
-            vocabContent = '';
-            clozeContent = '';
-            userAnswers = '';
-            updateProgress();
-            renderStep0();
-        }
-
-        function goToStep(step) {
-            currentStep = step;
-            updateProgress();
-            if (step === 0) renderStep0();
-            else if (step === 1) renderStep1();
-        }
-
-        // ========================================
-        // UI辅助
-        // ========================================
-        function updateProgress() {
-            const steps = document.querySelectorAll('.step-item');
-            const arrows = document.querySelectorAll('.step-arrow');
-
-            steps.forEach((step, index) => {
-                const circle = step.querySelector('.step-circle');
-                if (index < currentStep) {
-                    step.classList.remove('opacity-40');
-                    circle.className = 'w-12 h-12 rounded-full flex items-center justify-center mb-2 bg-green-500 text-white step-circle';
-                } else if (index === currentStep) {
-                    step.classList.remove('opacity-40');
-                    circle.className = 'w-12 h-12 rounded-full flex items-center justify-center mb-2 bg-indigo-600 text-white step-circle';
-                } else {
-                    step.classList.add('opacity-40');
-                    circle.className = 'w-12 h-12 rounded-full flex items-center justify-center mb-2 bg-gray-200 text-gray-500 step-circle';
-                }
-            });
-
-            arrows.forEach((arrow, index) => {
-                if (index < currentStep) {
-                    arrow.classList.add('text-green-500');
-                    arrow.classList.remove('text-gray-300');
-                } else {
-                    arrow.classList.add('text-gray-300');
-                    arrow.classList.remove('text-green-500');
-                }
-            });
-        }
-
-        function showLoading(message) {
-            const content = `
-                <div class="flex flex-col items-center justify-center py-20">
-                    <div class="w-16 h-16 border-4 border-indigo-600 border-t-transparent rounded-full spinner mb-4"></div>
-                    <p class="text-xl text-gray-700">${message}</p>
+            document.getElementById('phase-content').innerHTML = `
+                <div class="text-center" style="padding: 100px 0;">
+                    <div class="spinner"></div>
+                    <p style="margin-top: 24px; color: var(--text-secondary);">${state.t('generating')}</p>
                 </div>
             `;
-            document.getElementById('main-content').innerHTML = content;
+            
+            try {
+                const prompt = SYSTEM_PROMPTS.cloze.replace('${state.userLevel}', state.userLevel);
+                const result = await callClaude(
+                    `基于文章创建练习：\n\n${state.articleText}`,
+                    prompt
+                );
+                
+                state.learningData.cloze = result;
+                
+                document.getElementById('phase-content').innerHTML = `
+                    <div class="content-card">
+                        <h2 class="section-title">${state.t('phase2')}</h2>
+                        <div class="markdown-content">
+                            ${result}
+                        </div>
+                        <textarea id="answer-input" placeholder="${state.t('typeWord')}..." style="margin-top: 24px; min-height: 200px;"></textarea>
+                        <div class="text-center mt-20">
+                            <button class="btn btn-primary" onclick="submitAnswer()">${state.t('submit')}</button>
+                        </div>
+                    </div>
+                `;
+            } catch (e) {
+                showToast(state.t('error'));
+            }
         }
 
-        function hideLoading() {
-            // Loading will be replaced by next render
+        async function submitAnswer() {
+            const answer = document.getElementById('answer-input')?.value || '';
+            
+            state.currentPhase = 3;
+            render();
+            
+            document.getElementById('phase-content').innerHTML = `
+                <div class="text-center" style="padding: 100px 0;">
+                    <div class="spinner"></div>
+                    <p style="margin-top: 24px; color: var(--text-secondary);">${state.t('generating')}</p>
+                </div>
+            `;
+            
+            try {
+                const prompt = SYSTEM_PROMPTS.feedback.replace('${state.userLevel}', state.userLevel);
+                const result = await callClaude(
+                    `请批改：\n\n原文：${state.articleText}\n\n学生答案：${answer}`,
+                    prompt
+                );
+                
+                state.learningData.feedback = result;
+                
+                document.getElementById('phase-content').innerHTML = `
+                    <div class="content-card">
+                        <h2 class="section-title">${state.t('phase3')}</h2>
+                        <div class="markdown-content" id="feedback-content">
+                            ${result}
+                        </div>
+                        <div class="flex gap-12 mt-20" style="justify-content: center; flex-wrap: wrap;">
+                            <button class="btn btn-secondary" onclick="downloadPdf()">${state.t('downloadPdf')} 📄</button>
+                            <button class="btn btn-secondary" onclick="savePracticeRecord('${state.userLevel}')">${state.t('saveRecord')} 💾</button>
+                            <button class="btn btn-primary" onclick="nextPhase()">${state.t('next')}</button>
+                        </div>
+                    </div>
+                `;
+            } catch (e) {
+                showToast(state.t('error'));
+            }
         }
+
+        async function generateFlashcards() {
+            // 简化：直接从词汇学习中提取
+            state.learningData.flashcards = [
+                { word: 'exemple', meaning: '例子', type: 'NOM' },
+                { word: 'comprendre', meaning: '理解', type: 'VERBE' }
+            ];
+            
+            document.getElementById('phase-content').innerHTML = `
+                <div class="text-center">
+                    <button class="btn btn-primary" onclick="startReviewFromLearning()">${state.t('startReview')}</button>
+                </div>
+            `;
+        }
+
+        function startReviewFromLearning() {
+            state.currentMode = 'review';
+            // 将学习的词汇加入复习计划
+            state.learningData.flashcards.forEach(card => {
+                state.reviewSchedule.push({
+                    word: card.word,
+                    meaning: card.meaning,
+                    type: card.type,
+                    reviewDate: new Date().toISOString().split('T')[0],
+                    level: 1,
+                    attempt: 0
+                });
+            });
+            state.saveReviewSchedule();
+            render();
+        }
+
+        function checkFlashcard(event, correctWord) {
+            if (event.key === 'Enter') {
+                const input = event.target;
+                const userInput = input.value.trim().toLowerCase();
+                const correct = correctWord.toLowerCase();
+                
+                if (userInput === correct) {
+                    input.style.borderColor = 'var(--accent-green)';
+                    input.style.color = 'var(--accent-green)';
+                    document.getElementById('memory-buttons').classList.add('show');
+                    showToast(state.t('success'));
+                } else {
+                    input.style.borderColor = 'var(--accent-warm)';
+                    input.style.color = 'var(--accent-warm)';
+                }
+            }
+        }
+
+        function recordMemory(level, word) {
+            const intervals = {
+                3: [1, 3, 7, 15, 30],
+                2: [1, 2, 4, 8, 16],
+                1: [0.5, 1, 2, 4, 8]
+            };
+            
+            const schedule = intervals[level];
+            const today = new Date();
+            
+            state.reviewSchedule = state.reviewSchedule.filter(r => r.word !== word);
+            
+            schedule.forEach((days, index) => {
+                const date = new Date(today);
+                date.setDate(date.getDate() + Math.ceil(days));
+                state.reviewSchedule.push({
+                    word,
+                    meaning: state.getTodayReviews()[0]?.meaning || '',
+                    reviewDate: date.toISOString().split('T')[0],
+                    level,
+                    attempt: index + 1
+                });
+            });
+            
+            state.saveReviewSchedule();
+            showToast(state.t('saved'));
+            
+            setTimeout(() => {
+                render();
+            }, 1000);
+        }
+
+        function playAudio(word) {
+            const utterance = new SpeechSynthesisUtterance(word);
+            utterance.lang = 'fr-FR';
+            utterance.rate = 0.8;
+
+            // 等待声音列表加载完毕后筛选最佳法语声音
+            function speakWithBestVoice() {
+                const voices = window.speechSynthesis.getVoices();
+                // 优先顺序：Google法语 > 任何fr-FR > 任何fr > 默认
+                const preferred = [
+                    voices.find(v => v.name.includes('Google') && v.lang.startsWith('fr')),
+                    voices.find(v => v.lang === 'fr-FR'),
+                    voices.find(v => v.lang.startsWith('fr')),
+                ].find(Boolean);
+                if (preferred) utterance.voice = preferred;
+                window.speechSynthesis.cancel();
+                window.speechSynthesis.speak(utterance);
+            }
+
+            if (window.speechSynthesis.getVoices().length > 0) {
+                speakWithBestVoice();
+            } else {
+                window.speechSynthesis.onvoiceschanged = speakWithBestVoice;
+            }
+        }
+
+        // ==================== PDF 下载 ====================
+        function downloadPdf() {
+            showToast(state.t('pdfGenerating'));
+
+            const date = new Date().toLocaleDateString('fr-FR');
+            const level = state.userLevel || '';
+
+            // 构建PDF内容
+            const pdfContainer = document.createElement('div');
+            pdfContainer.style.cssText = 'padding: 40px; font-family: serif; color: #2C2C2B; max-width: 800px;';
+            pdfContainer.innerHTML = `
+                <div style="text-align:center; margin-bottom: 32px; border-bottom: 2px solid #5E6D62; padding-bottom: 20px;">
+                    <h1 style="font-size: 28px; font-weight: 700; margin-bottom: 8px;">DALF Rédacteur Pro</h1>
+                    <p style="color: #6B6B68;">Niveau ${level} · ${date}</p>
+                </div>
+                ${state.learningData.vocabulary ? `<h2 style="color:#5E6D62; margin: 24px 0 12px;">📚 Vocabulaire</h2><div>${state.learningData.vocabulary}</div><hr style="margin:24px 0;">` : ''}
+                ${state.learningData.cloze ? `<h2 style="color:#5E6D62; margin: 24px 0 12px;">✍️ Exercices</h2><div>${state.learningData.cloze}</div><hr style="margin:24px 0;">` : ''}
+                ${state.learningData.feedback ? `<h2 style="color:#5E6D62; margin: 24px 0 12px;">✅ Corrections</h2><div>${state.learningData.feedback}</div>` : ''}
+            `;
+            document.body.appendChild(pdfContainer);
+
+            const opt = {
+                margin: [10, 10, 10, 10],
+                filename: `DALF_${level}_${date.replace(/\//g, '-')}.pdf`,
+                image: { type: 'jpeg', quality: 0.95 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(pdfContainer).save().then(() => {
+                document.body.removeChild(pdfContainer);
+            });
+        }
+
+        // ==================== 练习记录存档 ====================
+        async function savePracticeRecord(level) {
+            const sessionData = {
+                date: new Date().toISOString(),
+                level: level,
+                article_excerpt: state.articleText.substring(0, 200),
+                vocabulary_count: (state.learningData.vocabulary.match(/###/g) || []).length,
+                has_feedback: !!state.learningData.feedback,
+                lang: state.currentLang
+            };
+
+            // 1. 本地存档（始终可用）
+            const history = JSON.parse(localStorage.getItem('practice_history') || '[]');
+            history.unshift(sessionData);
+            localStorage.setItem('practice_history', JSON.stringify(history.slice(0, 50))); // 保留最近50条
+
+            // 2. Supabase云端存档（若已配置）
+            await saveSessionToSupabase(sessionData);
+
+            showToast(state.t('recordSaved'));
+        }
+
+        
+            const input = document.getElementById('import-input');
+            const lines = input.value.trim().split('\n');
+            
+            let count = 0;
+            lines.forEach(line => {
+                const [word, meaning] = line.split('|').map(s => s.trim());
+                if (word && meaning) {
+                    state.reviewSchedule.push({
+                        word,
+                        meaning,
+                        reviewDate: new Date().toISOString().split('T')[0],
+                        level: 1,
+                        attempt: 0,
+                        type: 'IMPORTED'
+                    });
+                    count++;
+                }
+            });
+            
+            state.saveReviewSchedule();
+            showToast(`${state.t('success')}: ${count} ${state.t('words')}`);
+            
+            setTimeout(() => {
+                state.currentMode = 'review';
+                render();
+            }, 1000);
+        }
+
+        function showPhaseContent() {
+            // 占位函数
+        }
+
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // ==================== 初始化 ====================
+        marked.setOptions({
+            breaks: true,
+            gfm: true
+        });
+
+        window.addEventListener('DOMContentLoaded', () => {
+            render();
+            // 触发一次字数统计
+            setTimeout(updateWordCount, 100);
+        });
+
+        // 导出函数
+        window.setLanguage = setLanguage;
+        window.saveApiKey = saveApiKey;
+        window.selectMode = selectMode;
+        window.backToModes = backToModes;
+        window.selectLevel = selectLevel;
+        window.backToPhase0 = backToPhase0;
+        window.updateWordCount = updateWordCount;
+        window.startLearning = startLearning;
+        window.nextPhase = nextPhase;
+        window.submitAnswer = submitAnswer;
+        window.startReviewFromLearning = startReviewFromLearning;
+        window.checkFlashcard = checkFlashcard;
+        window.recordMemory = recordMemory;
+        window.playAudio = playAudio;
+        window.importVocabulary = importVocabulary;
+        window.downloadPdf = downloadPdf;
+        window.savePracticeRecord = savePracticeRecord;
     </script>
 </body>
 </html>
