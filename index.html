@@ -903,6 +903,41 @@
                 localStorage.setItem('review_schedule', JSON.stringify(this.reviewSchedule));
             }
 
+            // ---- 进度保存/恢复 ----
+            saveProgress() {
+                const session = {
+                    currentMode: this.currentMode,
+                    currentPhase: this.currentPhase,
+                    userLevel: this.userLevel,
+                    articleText: this.articleText,
+                    learningData: this.learningData,
+                    savedAt: new Date().toISOString()
+                };
+                localStorage.setItem('session_progress', JSON.stringify(session));
+            }
+
+            loadProgress() {
+                const raw = localStorage.getItem('session_progress');
+                if (!raw) return null;
+                try {
+                    return JSON.parse(raw);
+                } catch (e) {
+                    return null;
+                }
+            }
+
+            restoreProgress(session) {
+                this.currentMode = session.currentMode;
+                this.currentPhase = session.currentPhase;
+                this.userLevel = session.userLevel;
+                this.articleText = session.articleText;
+                this.learningData = session.learningData;
+            }
+
+            clearProgress() {
+                localStorage.removeItem('session_progress');
+            }
+
             getTodayReviews() {
                 const today = new Date().toISOString().split('T')[0];
                 return this.reviewSchedule.filter(r => r.reviewDate === today);
@@ -930,7 +965,7 @@
         const CONFIG = {
             // 部署Cloudflare Worker后，把Worker地址填在这里
             // 例如: 'https://dalf-proxy.yourname.workers.dev'
-            WORKER_URL: 'https://delfdalfassistant.yifan6760.workers.dev',
+            WORKER_URL: '',
             // Supabase配置（去supabase.com创建项目后填写）
             SUPABASE_URL: '',
             SUPABASE_ANON_KEY: '',
@@ -1007,86 +1042,139 @@
         }
 
         // ==================== System Prompts ====================
-        const SYSTEM_PROMPTS = {
-            vocabulary: `你是专业的DELF/DALF法语教师。学生等级：${state.userLevel}
+        // 等级配置：定义每个等级的词汇难度和练习要求
+        const LEVEL_CONFIG = {
+            A1: {
+                vocabDesc: '只提取最基础的高频生活词汇（CECR A1范围），避免任何复杂词汇',
+                chunkType: '单个高频词或最简单的固定搭配（如 il y a, c\'est）',
+                exerciseDesc: '填空用文章原词，句子极短，写作20-30字，句式只用现在时',
+                feedbackStyle: '以鼓励为主，只指出最关键的1-2个错误，语气温和'
+            },
+            A2: {
+                vocabDesc: '提取日常交流中的实用词汇（CECR A2范围），少量固定搭配',
+                chunkType: '日常词汇和简单动词短语（如 avoir besoin de, être en train de）',
+                exerciseDesc: '填空可用近形词，写作30-50字，可用过去时和将来时',
+                feedbackStyle: '鼓励为主，指出2-3个错误，重点解释语法规则'
+            },
+            B1: {
+                vocabDesc: '提取中级表达词汇（CECR B1范围），包含常用词块和搭配',
+                chunkType: '实用词块和常见句式（如 il est important de, en ce qui concerne）',
+                exerciseDesc: '填空可用同义词替换，写作50-80字，要求逻辑连贯',
+                feedbackStyle: '平衡鼓励和纠错，指出3-4个问题，要求改写错误句子'
+            },
+            B2: {
+                vocabDesc: '提取高频学术/论述词汇（CECR B2范围），重点词块和搭配',
+                chunkType: '论述词块和连接表达（如 par conséquent, il convient de noter que）',
+                exerciseDesc: '填空要求近义词辨析，写作80-120字，要求有论点和论据',
+                feedbackStyle: '严格指出所有错误，要求文体一致性，评分要有依据'
+            },
+            C1: {
+                vocabDesc: '提取高级表达和复杂结构（CECR C1范围），重点论述语块和搭配',
+                chunkType: '高级论述语块（如 force est de constater que, il n\'en demeure pas moins que）',
+                exerciseDesc: '填空要求精确辨析，写作120-180字，要求论证严密有层次',
+                feedbackStyle: '按DALF C1标准严格批改，重点评估论点发展和语言精确性'
+            },
+            C2: {
+                vocabDesc: '提取接近母语水平的高级表达（CECR C2范围），包含修辞和文体变化',
+                chunkType: '修辞表达和文体语块（如 loin s\'en faut, à cet égard）',
+                exerciseDesc: '填空要求文体匹配，写作180-250字，要求文体风格统一且精准',
+                feedbackStyle: '按母语水平标准批改，重点评估文体、修辞和语言优雅度'
+            }
+        };
 
-请分析文章并提取5-10个关键词汇。
+        function getSystemPrompts() {
+            const level = state.userLevel || 'B1';
+            const cfg = LEVEL_CONFIG[level] || LEVEL_CONFIG['B1'];
+
+            return {
+                vocabulary: `你是专业的DELF/DALF法语教师，专门帮助${level}水平的学生突破阅读障碍。
+
+**核心任务**：从文章中提取7到10个最值得学习的词块/语块，帮助学生积累可复用的表达。
+
+**等级要求（${level}）**：
+- 词汇范围：${cfg.vocabDesc}
+- 词块类型：${cfg.chunkType}
+
+**严格要求**：
+- 必须提取7-10个词块，不多不少
+- 优先选择在写作中可以直接复用的表达，而不是孤立词汇
+- 每个词块必须标注它在原文中的上下文
 
 **输出格式（Markdown）**：
 
-## 📚 词汇学习
+## 📚 词块学习（${level}）
 
-### 1. [词汇] (词性)
+### 1. [词块] (词性/类型)
 **中文释义**：[翻译]
-**常见搭配**：[3-5个]
-**使用场景**：[正式/口语]
-**近义词**：[2-3个]
-**反义词**：[1-2个]
-**例句**：[来自文章或贴近主题]
+**原文语境**：[摘录原文中的句子]
+**常见搭配**：[2-3个]
+**写作示例**：[一个可以直接用在写作中的例句]
+**近义表达**：[1-2个同级别替换]
 
 ---
 
-### 2. [词汇2] (词性)
-...
+每个词块用 --- 分隔，严格控制在7-10个。`,
 
-**要求**：
-- ${state.userLevel === 'A1' || state.userLevel === 'A2' ? '只提取最基础的高频词汇' : ''}
-- ${state.userLevel === 'C1' || state.userLevel === 'C2' ? '重点高级表达和复杂结构' : ''}
-- 使用清晰的Markdown格式
-- 每个词汇用 --- 分隔`,
+                cloze: `你是专业的DELF/DALF法语教师，为${level}水平学生设计练习。
 
-            cloze: `创建综合练习（学生等级：${state.userLevel}）。
+**等级要求（${level}）**：${cfg.exerciseDesc}
 
-**格式**：
+**核心原则**：练习素材必须来自学生刚学过的词块和文章语境，实现"一鱼多吃"——用同一篇文章同时训练词块理解和写作输出。
 
-## ✍️ 综合练习
+**输出格式**：
 
-### 练习一：填空
-根据上下文填写正确的词汇：
+## ✍️ 词块巩固练习（${level}）
 
-1. [句子] ______ [句子续]
-2. [句子] ______ [句子续]
+### 练习一：词块填空
+根据上下文，从刚学的词块中选择合适的填入空白处：
+
+1. [句子，留空处用______标注]
+2. [句子]
+3. [句子]
+（共4-5题）
 
 ### 练习二：句子改写
-将以下句子按要求改写：
+用刚学的词块改写以下句子，使表达更准确：
 
-1. 原句：[句子]
-   要求：[改为疑问句/否定句等]
+1. 原句：[简单表达]
+   提示：试用 [某词块]
 
-### 练习三：写作任务
-[简短写作题目，50-100词]
+### 练习三：写作输出
+基于文章主题，完成以下写作任务：
+[具体题目]
+要求：${cfg.exerciseDesc.split('，').pop()}
+尽量使用本次学习的词块。`,
 
-**要求**：
-- ${state.userLevel === 'A1' || state.userLevel === 'A2' ? '简单句式，基础词汇' : ''}
-- ${state.userLevel === 'C1' || state.userLevel === 'C2' ? '使用复杂结构和高级表达' : ''}`,
+                feedback: `你是专业的DELF/DALF法语教师，批改${level}水平学生的练习。
 
-            feedback: `批改学生练习（等级：${state.userLevel}）。
+**批改标准（${level}）**：${cfg.feedbackStyle}
 
-**格式**：
+**重要**：批改时必须引用学生的原句，让学生清楚看到哪里被修改了。
 
-## ✅ 优点
-- [具体表扬1]
-- [具体表扬2]
+**输出格式**：
 
-## ⚠️ 需要改进
-### 错误1
-**原句**：[学生写的]
-**正确**：[修改后]
-**解释**：[为什么]
+## ✅ 做得好的地方
+- [具体指出1-2处用得好的词块或表达]
 
-### 错误2
-...
+## 🔧 需要改进
+### 问题 1
+**你写的**：[原句]
+**建议改为**：[修改后]
+**原因**：[简短解释]
 
-## 💡 改进建议
-[具体建议]
+（按等级指出相应数量的问题）
 
-## 📊 评分
-- 内容：[X]/5
-- 语法：[X]/5
-- 词汇：[X]/5
+## 💡 词块使用回顾
+[评价学生是否正确使用了本次学习的词块，给出具体建议]
 
-**总评**：[鼓励性总结]`
-        };
+## 📊 本次评分
+- 词块运用：[X]/5
+- 语法准确：[X]/5  
+- 内容表达：[X]/5
+
+**总评**：[${cfg.feedbackStyle.includes('鼓励') ? '温和鼓励性' : '专业客观'}的总结]`
+            };
+        }
 
         // ==================== UI 渲染 ====================
         function render() {
@@ -1365,6 +1453,7 @@
         function backToModes() {
             state.currentMode = null;
             state.currentPhase = 0;
+            state.clearProgress();
             render();
         }
 
@@ -1411,13 +1500,14 @@
             `;
             
             try {
-                const prompt = SYSTEM_PROMPTS.vocabulary.replace('${state.userLevel}', state.userLevel);
+                const prompts = getSystemPrompts();
                 const result = await callClaude(
                     `请分析以下文章：\n\n${state.articleText}`,
-                    prompt
+                    prompts.vocabulary
                 );
                 
                 state.learningData.vocabulary = result;
+                state.saveProgress();
                 
                 // 渲染结果
                 document.getElementById('phase-content').innerHTML = `
@@ -1463,13 +1553,14 @@
             `;
             
             try {
-                const prompt = SYSTEM_PROMPTS.cloze.replace('${state.userLevel}', state.userLevel);
+                const prompts = getSystemPrompts();
                 const result = await callClaude(
                     `基于文章创建练习：\n\n${state.articleText}`,
-                    prompt
+                    prompts.cloze
                 );
                 
                 state.learningData.cloze = result;
+                state.saveProgress();
                 
                 document.getElementById('phase-content').innerHTML = `
                     <div class="content-card">
@@ -1502,13 +1593,14 @@
             `;
             
             try {
-                const prompt = SYSTEM_PROMPTS.feedback.replace('${state.userLevel}', state.userLevel);
+                const prompts = getSystemPrompts();
                 const result = await callClaude(
                     `请批改：\n\n原文：${state.articleText}\n\n学生答案：${answer}`,
-                    prompt
+                    prompts.feedback
                 );
                 
                 state.learningData.feedback = result;
+                state.saveProgress();
                 
                 document.getElementById('phase-content').innerHTML = `
                     <div class="content-card">
@@ -1739,10 +1831,67 @@
         });
 
         window.addEventListener('DOMContentLoaded', () => {
-            render();
-            // 触发一次字数统计
+            // 检查是否有未完成的学习session
+            const saved = state.loadProgress();
+            if (saved && saved.currentPhase > 0 && saved.articleText) {
+                const minutesAgo = Math.round((Date.now() - new Date(saved.savedAt)) / 60000);
+                const timeLabel = minutesAgo < 60
+                    ? `${minutesAgo}分钟前`
+                    : `${Math.round(minutesAgo / 60)}小时前`;
+
+                const resume = confirm(`发现未完成的学习（${timeLabel}保存，等级 ${saved.userLevel}）\n\n是否继续上次的学习？\n\n点击"取消"开始新的学习`);
+                if (resume) {
+                    state.restoreProgress(saved);
+                    render();
+                    // 恢复对应阶段的内容显示
+                    setTimeout(() => restorePhaseContent(saved.currentPhase, saved.learningData), 100);
+                } else {
+                    state.clearProgress();
+                    render();
+                }
+            } else {
+                render();
+            }
             setTimeout(updateWordCount, 100);
         });
+
+        function restorePhaseContent(phase, learningData) {
+            const container = document.getElementById('phase-content');
+            if (!container) return;
+
+            if (phase === 1 && learningData.vocabulary) {
+                container.innerHTML = `
+                    <div class="content-card">
+                        <h2 class="section-title">${state.t('phase1')}</h2>
+                        <div class="markdown-content">${learningData.vocabulary}</div>
+                        <div class="text-center mt-20">
+                            <button class="btn btn-primary" onclick="nextPhase()">${state.t('next')}</button>
+                        </div>
+                    </div>`;
+            } else if (phase === 2 && learningData.cloze) {
+                container.innerHTML = `
+                    <div class="content-card">
+                        <h2 class="section-title">${state.t('phase2')}</h2>
+                        <div class="markdown-content">${learningData.cloze}</div>
+                        <textarea id="answer-input" placeholder="${state.t('typeWord')}..." style="margin-top: 24px; min-height: 200px;"></textarea>
+                        <div class="text-center mt-20">
+                            <button class="btn btn-primary" onclick="submitAnswer()">${state.t('submit')}</button>
+                        </div>
+                    </div>`;
+            } else if (phase === 3 && learningData.feedback) {
+                container.innerHTML = `
+                    <div class="content-card">
+                        <h2 class="section-title">${state.t('phase3')}</h2>
+                        <div class="markdown-content" id="feedback-content">${learningData.feedback}</div>
+                        <div class="flex gap-12 mt-20" style="justify-content: center; flex-wrap: wrap;">
+                            <button class="btn btn-secondary" onclick="downloadPdf()">${state.t('downloadPdf')} 📄</button>
+                            <button class="btn btn-secondary" onclick="savePracticeRecord('${state.userLevel}')">${state.t('saveRecord')} 💾</button>
+                            <button class="btn btn-primary" onclick="nextPhase()">${state.t('next')}</button>
+                        </div>
+                    </div>`;
+            }
+        }
+        window.restorePhaseContent = restorePhaseContent;
 
         // 导出函数
         window.setLanguage = setLanguage;
