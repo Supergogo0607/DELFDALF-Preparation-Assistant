@@ -10,1907 +10,879 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
-            --bg-base: #EBEBE6;
-            --bg-card: #F5F5F2;
-            --bg-hover: #E8E8E3;
-            --text-primary: #2C2C2B;
-            --text-secondary: #6B6B68;
-            --text-muted: #9A9A95;
-            --border-soft: #D1D1CB;
-            --accent-green: #5E6D62;
-            --accent-warm: #A67B7B;
-            --accent-gold: #C9A961;
+            --bg-base: #EBEBE6; --bg-card: #F5F5F2; --bg-hover: #E8E8E3;
+            --text-primary: #2C2C2B; --text-secondary: #6B6B68; --text-muted: #9A9A95;
+            --border-soft: #D1D1CB; --accent-green: #5E6D62; --accent-warm: #A67B7B; --accent-gold: #C9A961;
         }
-
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body {
-            background-color: var(--bg-base);
-            color: var(--text-primary);
-            font-family: 'Literata', 'Noto Serif SC', serif;
-            line-height: 1.75;
-            min-height: 100vh;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        /* ========== 头部导航 ========== */
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 0;
-            border-bottom: 1px solid var(--border-soft);
-            margin-bottom: 30px;
-        }
-
-        .logo {
-            font-size: 24px;
-            font-weight: 700;
-            font-family: 'Crimson Pro', serif;
-        }
-
-        .lang-switch {
-            display: flex;
-            gap: 4px;
-            background: var(--bg-card);
-            padding: 4px;
-            border-radius: 10px;
-            border: 1px solid var(--border-soft);
-        }
-
-        .lang-option {
-            padding: 8px 16px;
-            border-radius: 7px;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            color: var(--text-secondary);
-            border: none;
-            background: transparent;
-        }
-
-        .lang-option.active {
-            background: var(--text-primary);
-            color: var(--bg-base);
-        }
-
-        /* ========== 按钮系统 ========== */
-        .btn {
-            padding: 12px 24px;
-            border-radius: 10px;
-            font-size: 13px;
-            font-weight: 600;
-            border: none;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-family: system-ui, sans-serif;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .btn-primary {
-            background: var(--text-primary);
-            color: var(--bg-base);
-        }
-
-        .btn-primary:hover {
-            background: var(--accent-green);
-            transform: translateY(-1px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-        }
-
-        .btn-secondary {
-            background: transparent;
-            color: var(--text-secondary);
-            border: 1px solid var(--border-soft);
-        }
-
-        .btn-secondary:hover {
-            background: var(--bg-hover);
-        }
-
-        /* ========== 模式选择卡片 ========== */
-        .mode-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 24px;
-            margin-top: 40px;
-        }
-
-        .mode-card {
-            background: var(--bg-card);
-            border: 2px solid var(--border-soft);
-            border-radius: 16px;
-            padding: 40px;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-align: center;
-        }
-
-        .mode-card:hover {
-            border-color: var(--accent-green);
-            transform: translateY(-4px);
-            box-shadow: 0 12px 40px rgba(0,0,0,0.08);
-        }
-
-        .mode-icon {
-            font-size: 56px;
-            margin-bottom: 20px;
-        }
-
-        .mode-title {
-            font-size: 22px;
-            font-weight: 700;
-            margin-bottom: 12px;
-            font-family: 'Crimson Pro', serif;
-        }
-
-        .mode-desc {
-            font-size: 15px;
-            color: var(--text-secondary);
-            line-height: 1.6;
-        }
-
-        /* ========== 学习页面（来自Fixed版本）========== */
-        .learning-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 32px;
-            background: rgba(255,255,255,0.5);
-            border-bottom: 1px solid var(--border-soft);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            backdrop-filter: blur(8px);
-        }
-
-        .progress-nav {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .progress-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: var(--border-soft);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-        }
-
-        .progress-dot.active {
-            background: var(--accent-green);
-            transform: scale(1.4);
-            box-shadow: 0 0 0 6px rgba(94, 109, 98, 0.15);
-        }
-
-        .progress-dot.completed {
-            background: var(--accent-green);
-        }
-
-        .progress-emoji {
-            position: absolute;
-            top: -32px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 20px;
-        }
-
-        .progress-line {
-            width: 32px;
-            height: 2px;
-            background: var(--border-soft);
-        }
-
-        /* ========== 等级徽章 ========== */
-        .level-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            background: var(--accent-green);
-            color: white;
-        }
-
-        .time-estimate {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 16px;
-            background: rgba(94, 109, 98, 0.1);
-            border-radius: 8px;
-            font-size: 13px;
-            color: var(--accent-green);
-            font-weight: 600;
-        }
-
-        /* ========== 学习内容区 ========== */
-        .learning-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 40px 20px;
-        }
-
-        .content-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-soft);
-            border-radius: 16px;
-            padding: 40px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.02);
-        }
-
-        .section-title {
-            font-size: 28px;
-            font-weight: 700;
-            margin-bottom: 24px;
-            font-family: 'Crimson Pro', serif;
-            color: var(--accent-green);
-        }
-
-        /* ========== 输入框 ========== */
-        textarea, input[type="text"], input[type="password"] {
-            width: 100%;
-            padding: 20px;
-            border: 1px solid var(--border-soft);
-            border-radius: 12px;
-            font-family: inherit;
-            font-size: 16px;
-            line-height: 1.8;
-            background: white;
-            color: var(--text-primary);
-            transition: all 0.3s;
-            resize: vertical;
-        }
-
-        textarea:focus, input:focus {
-            outline: none;
-            border-color: var(--accent-green);
-            box-shadow: 0 0 0 4px rgba(94, 109, 98, 0.08);
-        }
-
-        .input-label {
-            display: block;
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-secondary);
-            margin-bottom: 8px;
-        }
-
-        /* ========== Markdown 内容 ========== */
-        .markdown-content {
-            line-height: 1.9;
-            color: var(--text-primary);
-        }
-
-        .markdown-content h1 {
-            font-size: 2rem;
-            margin: 1.5rem 0 1rem;
-            font-weight: 700;
-            color: var(--accent-green);
-        }
-
-        .markdown-content h2 {
-            font-size: 1.75rem;
-            margin: 1.5rem 0 1rem;
-            font-weight: 700;
-            color: var(--accent-green);
-        }
-
-        .markdown-content h3 {
-            font-size: 1.5rem;
-            margin: 1.25rem 0 0.75rem;
-            font-weight: 600;
-        }
-
-        .markdown-content p {
-            margin: 1rem 0;
-        }
-
-        .markdown-content ul, .markdown-content ol {
-            margin: 1rem 0;
-            padding-left: 2rem;
-        }
-
-        .markdown-content li {
-            margin: 0.5rem 0;
-        }
-
-        .markdown-content strong {
-            font-weight: 600;
-            color: var(--accent-green);
-        }
-
-        .markdown-content em {
-            font-style: italic;
-            color: var(--text-secondary);
-        }
-
-        .markdown-content code {
-            background: var(--bg-hover);
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-family: 'Courier New', monospace;
-            font-size: 0.9em;
-        }
-
-        .markdown-content hr {
-            border: none;
-            border-top: 2px solid var(--border-soft);
-            margin: 2rem 0;
-        }
-
-        /* ========== 复习卡片 ========== */
-        .flashcard-container {
-            max-width: 600px;
-            margin: 60px auto;
-        }
-
-        .flashcard {
-            background: white;
-            border: 1px solid var(--border-soft);
-            border-radius: 20px;
-            padding: 48px;
-            box-shadow: 0 12px 40px rgba(0,0,0,0.08);
-            text-align: center;
-        }
-
-        .flashcard-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 32px;
-        }
-
-        .flashcard-type {
-            font-size: 11px;
-            font-weight: 600;
-            background: var(--bg-hover);
-            padding: 6px 12px;
-            border-radius: 6px;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .flashcard-audio {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            border: 2px solid var(--border-soft);
-            background: transparent;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-        }
-
-        .flashcard-audio:hover {
-            border-color: var(--accent-green);
-            background: rgba(94, 109, 98, 0.1);
-        }
-
-        .flashcard-meaning {
-            font-size: 24px;
-            color: var(--text-secondary);
-            margin-bottom: 32px;
-            font-style: italic;
-            line-height: 1.6;
-        }
-
-        .flashcard-input {
-            width: 100%;
-            padding: 20px;
-            font-size: 20px;
-            text-align: center;
-            border: 2px solid var(--border-soft);
-            border-radius: 12px;
-            margin-bottom: 24px;
-            font-family: 'Crimson Pro', serif;
-        }
-
-        .memory-buttons {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-            opacity: 0;
-            transition: opacity 0.3s;
-            margin-top: 24px;
-        }
-
-        .memory-buttons.show {
-            opacity: 1;
-        }
-
-        .memory-btn {
-            flex: 1;
-            padding: 16px 24px;
-            border-radius: 10px;
-            border: 2px solid;
-            background: white;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        .memory-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(0,0,0,0.1);
-        }
-
-        .memory-btn.proficient {
-            border-color: #10B981;
-            color: #10B981;
-        }
-
-        .memory-btn.proficient:hover {
-            background: #10B981;
-            color: white;
-        }
-
-        .memory-btn.hesitant {
-            border-color: #F59E0B;
-            color: #F59E0B;
-        }
-
-        .memory-btn.hesitant:hover {
-            background: #F59E0B;
-            color: white;
-        }
-
-        .memory-btn.forgotten {
-            border-color: var(--accent-warm);
-            color: var(--accent-warm);
-        }
-
-        .memory-btn.forgotten:hover {
-            background: var(--accent-warm);
-            color: white;
-        }
-
-        /* ========== API配置 ========== */
-        .api-setup {
-            background: #FFF9E6;
-            border: 2px dashed var(--accent-gold);
-            border-radius: 16px;
-            padding: 32px;
-            margin-bottom: 32px;
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .warning-badge {
-            display: inline-block;
-            background: var(--accent-gold);
-            color: white;
-            padding: 6px 14px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: 600;
-            margin-bottom: 16px;
-        }
-
-        /* ========== 加载与动画 ========== */
-        .spinner {
-            width: 48px;
-            height: 48px;
-            border: 4px solid var(--border-soft);
-            border-top-color: var(--text-primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 60px auto;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .fade-in {
-            animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* ========== Toast 通知 ========== */
-        .toast {
-            position: fixed;
-            bottom: 32px;
-            right: 32px;
-            background: var(--text-primary);
-            color: var(--bg-base);
-            padding: 16px 24px;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 500;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-            z-index: 1000;
-            animation: slideIn 0.3s;
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translateX(400px);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        /* ========== 工具类 ========== */
+        body { background-color: var(--bg-base); color: var(--text-primary); font-family: 'Literata', 'Noto Serif SC', serif; line-height: 1.75; min-height: 100vh; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; border-bottom: 1px solid var(--border-soft); margin-bottom: 30px; }
+        .logo { font-size: 24px; font-weight: 700; font-family: 'Crimson Pro', serif; }
+        .lang-switch { display: flex; gap: 4px; background: var(--bg-card); padding: 4px; border-radius: 10px; border: 1px solid var(--border-soft); }
+        .lang-option { padding: 8px 16px; border-radius: 7px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; color: var(--text-secondary); border: none; background: transparent; }
+        .lang-option.active { background: var(--text-primary); color: var(--bg-base); }
+        .btn { padding: 12px 24px; border-radius: 10px; font-size: 13px; font-weight: 600; border: none; cursor: pointer; transition: all 0.2s; font-family: system-ui, sans-serif; text-transform: uppercase; letter-spacing: 0.5px; }
+        .btn-primary { background: var(--text-primary); color: var(--bg-base); }
+        .btn-primary:hover { background: var(--accent-green); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
+        .btn-secondary { background: transparent; color: var(--text-secondary); border: 1px solid var(--border-soft); }
+        .btn-secondary:hover { background: var(--bg-hover); }
+        .mode-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin-top: 40px; }
+        .mode-card { background: var(--bg-card); border: 2px solid var(--border-soft); border-radius: 16px; padding: 40px; cursor: pointer; transition: all 0.3s; text-align: center; }
+        .mode-card:hover { border-color: var(--accent-green); transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.08); }
+        .mode-icon { font-size: 56px; margin-bottom: 20px; }
+        .mode-title { font-size: 22px; font-weight: 700; margin-bottom: 12px; font-family: 'Crimson Pro', serif; }
+        .mode-desc { font-size: 15px; color: var(--text-secondary); line-height: 1.6; }
+        .learning-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 32px; background: rgba(255,255,255,0.5); border-bottom: 1px solid var(--border-soft); position: sticky; top: 0; z-index: 100; backdrop-filter: blur(8px); }
+        .progress-nav { display: flex; align-items: center; gap: 12px; }
+        .progress-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--border-soft); transition: all 0.4s cubic-bezier(0.4,0,0.2,1); position: relative; }
+        .progress-dot.active { background: var(--accent-green); transform: scale(1.4); box-shadow: 0 0 0 6px rgba(94,109,98,0.15); }
+        .progress-dot.completed { background: var(--accent-green); }
+        .progress-emoji { position: absolute; top: -32px; left: 50%; transform: translateX(-50%); font-size: 20px; }
+        .progress-line { width: 32px; height: 2px; background: var(--border-soft); }
+        .level-badge { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 8px; font-size: 12px; font-weight: 600; letter-spacing: 0.5px; background: var(--accent-green); color: white; }
+        .time-estimate { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; background: rgba(94,109,98,0.1); border-radius: 8px; font-size: 13px; color: var(--accent-green); font-weight: 600; }
+        .learning-content { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
+        .content-card { background: var(--bg-card); border: 1px solid var(--border-soft); border-radius: 16px; padding: 40px; margin-bottom: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); }
+        .section-title { font-size: 28px; font-weight: 700; margin-bottom: 24px; font-family: 'Crimson Pro', serif; color: var(--accent-green); }
+        textarea, input[type="text"], input[type="password"] { width: 100%; padding: 20px; border: 1px solid var(--border-soft); border-radius: 12px; font-family: inherit; font-size: 16px; line-height: 1.8; background: white; color: var(--text-primary); transition: all 0.3s; resize: vertical; }
+        textarea:focus, input:focus { outline: none; border-color: var(--accent-green); box-shadow: 0 0 0 4px rgba(94,109,98,0.08); }
+        .input-label { display: block; font-size: 14px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; }
+        .markdown-content { line-height: 1.9; color: var(--text-primary); }
+        .markdown-content h1 { font-size: 2rem; margin: 1.5rem 0 1rem; font-weight: 700; color: var(--accent-green); }
+        .markdown-content h2 { font-size: 1.75rem; margin: 1.5rem 0 1rem; font-weight: 700; color: var(--accent-green); }
+        .markdown-content h3 { font-size: 1.5rem; margin: 1.25rem 0 0.75rem; font-weight: 600; }
+        .markdown-content p { margin: 1rem 0; }
+        .markdown-content ul, .markdown-content ol { margin: 1rem 0; padding-left: 2rem; }
+        .markdown-content li { margin: 0.5rem 0; }
+        .markdown-content strong { font-weight: 600; color: var(--accent-green); }
+        .markdown-content em { font-style: italic; color: var(--text-secondary); }
+        .markdown-content code { background: var(--bg-hover); padding: 2px 6px; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 0.9em; }
+        .markdown-content hr { border: none; border-top: 2px solid var(--border-soft); margin: 2rem 0; }
+        .flashcard-container { max-width: 600px; margin: 60px auto; }
+        .flashcard { background: white; border: 1px solid var(--border-soft); border-radius: 20px; padding: 48px; box-shadow: 0 12px 40px rgba(0,0,0,0.08); text-align: center; }
+        .flashcard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+        .flashcard-type { font-size: 11px; font-weight: 600; background: var(--bg-hover); padding: 6px 12px; border-radius: 6px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+        .flashcard-audio { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--border-soft); background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+        .flashcard-audio:hover { border-color: var(--accent-green); background: rgba(94,109,98,0.1); }
+        .flashcard-meaning { font-size: 24px; color: var(--text-secondary); margin-bottom: 32px; font-style: italic; line-height: 1.6; }
+        .flashcard-input { width: 100%; padding: 20px; font-size: 20px; text-align: center; border: 2px solid var(--border-soft); border-radius: 12px; margin-bottom: 24px; font-family: 'Crimson Pro', serif; }
+        .memory-buttons { display: flex; gap: 12px; justify-content: center; opacity: 0; transition: opacity 0.3s; margin-top: 24px; }
+        .memory-buttons.show { opacity: 1; }
+        .memory-btn { flex: 1; padding: 16px 24px; border-radius: 10px; border: 2px solid; background: white; cursor: pointer; transition: all 0.2s; font-weight: 600; font-size: 14px; }
+        .memory-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.1); }
+        .memory-btn.proficient { border-color: #10B981; color: #10B981; }
+        .memory-btn.proficient:hover { background: #10B981; color: white; }
+        .memory-btn.hesitant { border-color: #F59E0B; color: #F59E0B; }
+        .memory-btn.hesitant:hover { background: #F59E0B; color: white; }
+        .memory-btn.forgotten { border-color: var(--accent-warm); color: var(--accent-warm); }
+        .memory-btn.forgotten:hover { background: var(--accent-warm); color: white; }
+        .spinner { width: 48px; height: 48px; border: 4px solid var(--border-soft); border-top-color: var(--text-primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 60px auto; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .fade-in { animation: fadeInUp 0.6s cubic-bezier(0.4,0,0.2,1); }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        .toast { position: fixed; bottom: 32px; right: 32px; background: var(--text-primary); color: var(--bg-base); padding: 16px 24px; border-radius: 12px; font-size: 14px; font-weight: 500; box-shadow: 0 8px 32px rgba(0,0,0,0.2); z-index: 1000; animation: slideIn 0.3s; }
+        @keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .chunk-added-banner { margin-top: 16px; padding: 12px 16px; background: rgba(94,109,98,0.08); border-radius: 8px; font-size: 13px; color: var(--accent-green); }
         .hidden { display: none !important; }
         .text-center { text-align: center; }
         .mt-20 { margin-top: 20px; }
         .mb-20 { margin-bottom: 20px; }
         .flex { display: flex; }
-        .flex-col { flex-direction: column; }
         .items-center { align-items: center; }
         .justify-center { justify-content: center; }
         .justify-between { justify-content: space-between; }
         .gap-12 { gap: 12px; }
-
-        /* ========== 响应式 ========== */
         @media (max-width: 768px) {
-            .mode-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .learning-header {
-                flex-direction: column;
-                gap: 16px;
-                padding: 16px;
-            }
-            
-            .content-card {
-                padding: 24px;
-            }
-            
-            .flashcard {
-                padding: 32px 24px;
-            }
+            .mode-grid { grid-template-columns: 1fr; }
+            .learning-header { flex-direction: column; gap: 16px; padding: 16px; }
+            .content-card { padding: 24px; }
+            .flashcard { padding: 32px 24px; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- 头部导航 -->
-        <div class="header">
-            <div class="logo">DALF Rédacteur Pro</div>
-            <div class="lang-switch">
-                <button class="lang-option active" onclick="setLanguage('zh')" data-lang="zh">中文</button>
-                <button class="lang-option" onclick="setLanguage('en')" data-lang="en">English</button>
-                <button class="lang-option" onclick="setLanguage('fr')" data-lang="fr">Français</button>
-            </div>
+<div class="container">
+    <div class="header">
+        <div class="logo">DALF Rédacteur Pro</div>
+        <div class="lang-switch">
+            <button class="lang-option active" onclick="setLanguage('zh')" data-lang="zh">中文</button>
+            <button class="lang-option" onclick="setLanguage('en')" data-lang="en">English</button>
+            <button class="lang-option" onclick="setLanguage('fr')" data-lang="fr">Français</button>
         </div>
-
-        <!-- 主内容区 -->
-        <div id="app"></div>
     </div>
+    <div id="app"></div>
+</div>
 
-    <script>
-        // ==================== 完整翻译配置 ====================
-        const TRANSLATIONS = {
-            zh: {
-                // 导航
-                appTitle: 'DALF 智能写作工作室',
-                
-                // 模式选择
-                selectMode: '选择学习模式',
-                learningMode: '学习模式',
-                learningDesc: '从文章中学习词块、句式，完成练习和独立输出',
-                reviewMode: '复习模式',
-                reviewDesc: '复习已学词汇，使用遗忘曲线智能推送',
-                importMode: '导入复习',
-                importDesc: '自定义导入词汇进行复习',
-                
-                // API设置
-                apiSetup: 'API 配置',
-                apiKeyLabel: '请输入 Anthropic API Key',
-                apiKeyPlaceholder: 'sk-ant-api03-...',
-                saveApiKey: '保存',
-                getApiKey: '获取密钥',
-                
-                // 学习阶段
-                phase0: '准备阶段',
-                phase1: '阶段一：词汇学习',
-                phase2: '阶段二：综合练习',
-                phase3: '阶段三：智能反馈',
-                phase4: '阶段四：闪卡复习',
-                
-                // 按钮
-                back: '返回',
-                start: '开始学习',
-                next: '下一步',
-                submit: '提交答案',
-                checkAnswer: '查看答案',
-                continue: '继续',
-                finish: '完成',
-                
-                // 输入
-                selectLevel: '选择你的法语等级',
-                inputArticle: '粘贴文章或听力转录内容',
-                wordCount: '字数',
-                estimatedTime: '预计学习时间',
-                minutes: '分钟',
-                
-                // 等级描述
-                levelDesc: {
-                    A1: '入门级 - 基础词汇和简单句型',
-                    A2: '基础级 - 日常对话能力',
-                    B1: '进阶级 - 独立运用语言',
-                    B2: '高阶级 - 流利表达观点',
-                    C1: '精通级 - 高级词汇和复杂结构',
-                    C2: '母语级 - 接近母语水平'
-                },
-                
-                // 复习
-                todayReview: '今日待复习',
-                words: '个词',
-                startReview: '开始复习',
-                proficient: '熟练',
-                hesitant: '犹豫',
-                forgotten: '忘记',
-                typeWord: '请拼写这个词',
-                
-                // 导入
-                importFormat: '格式说明',
-                importExample: '例如',
-                importBtn: '开始导入',
-                
-                // 提示
-                loading: '生成中...',
-                generating: '正在生成学习材料...',
-                success: '成功',
-                error: '错误',
-                saved: '已保存',
-                noApiKey: '请先设置 API Key',
-                noInput: '请输入文章内容',
-                noDueReviews: '暂无待复习内容',
-                allDone: '今日复习已完成',
-                downloadPdf: '下载PDF',
-                saveRecord: '保存练习记录',
-                recordSaved: '练习记录已保存',
-                pdfGenerating: '生成PDF中...'
-            },
-            
-            en: {
-                appTitle: 'DALF Intelligent Writing Studio',
-                
-                selectMode: 'Select Learning Mode',
-                learningMode: 'Learning Mode',
-                learningDesc: 'Learn vocabulary chunks and sentence patterns from articles',
-                reviewMode: 'Review Mode',
-                reviewDesc: 'Review learned vocabulary with spaced repetition',
-                importMode: 'Import Review',
-                importDesc: 'Import custom vocabulary for review',
-                
-                apiSetup: 'API Configuration',
-                apiKeyLabel: 'Enter Anthropic API Key',
-                apiKeyPlaceholder: 'sk-ant-api03-...',
-                saveApiKey: 'Save',
-                getApiKey: 'Get Key',
-                
-                phase0: 'Preparation',
-                phase1: 'Phase 1: Vocabulary',
-                phase2: 'Phase 2: Synthesis',
-                phase3: 'Phase 3: Feedback',
-                phase4: 'Phase 4: Flashcards',
-                
-                back: 'Back',
-                start: 'Start Learning',
-                next: 'Next',
-                submit: 'Submit',
-                checkAnswer: 'Check Answer',
-                continue: 'Continue',
-                finish: 'Finish',
-                
-                selectLevel: 'Select Your French Level',
-                inputArticle: 'Paste article or transcript here',
-                wordCount: 'Words',
-                estimatedTime: 'Estimated Time',
-                minutes: 'mins',
-                
-                levelDesc: {
-                    A1: 'Beginner - Basic vocabulary and simple sentences',
-                    A2: 'Elementary - Everyday conversations',
-                    B1: 'Intermediate - Independent language use',
-                    B2: 'Upper Intermediate - Fluent expression',
-                    C1: 'Advanced - Complex structures',
-                    C2: 'Proficient - Near-native level'
-                },
-                
-                todayReview: 'Due Today',
-                words: 'words',
-                startReview: 'Start Review',
-                proficient: 'Proficient',
-                hesitant: 'Hesitant',
-                forgotten: 'Forgotten',
-                typeWord: 'Type the word',
-                
-                importFormat: 'Format',
-                importExample: 'Example',
-                importBtn: 'Import',
-                
-                loading: 'Generating...',
-                generating: 'Generating learning materials...',
-                success: 'Success',
-                error: 'Error',
-                saved: 'Saved',
-                noApiKey: 'Please set API Key first',
-                noInput: 'Please input text',
-                noDueReviews: 'No reviews due',
-                allDone: 'All reviews completed',
-                downloadPdf: 'Download PDF',
-                saveRecord: 'Save Practice Record',
-                recordSaved: 'Record saved',
-                pdfGenerating: 'Generating PDF...'
-            },
-            
-            fr: {
-                appTitle: 'DALF Studio d\'Écriture Intelligent',
-                
-                selectMode: 'Choisissez le mode d\'apprentissage',
-                learningMode: 'Mode Apprentissage',
-                learningDesc: 'Apprendre les expressions et structures à partir d\'articles',
-                reviewMode: 'Mode Révision',
-                reviewDesc: 'Réviser le vocabulaire avec la courbe d\'oubli',
-                importMode: 'Importer Révision',
-                importDesc: 'Importer du vocabulaire personnalisé',
-                
-                apiSetup: 'Configuration API',
-                apiKeyLabel: 'Entrez votre clé API Anthropic',
-                apiKeyPlaceholder: 'sk-ant-api03-...',
-                saveApiKey: 'Sauvegarder',
-                getApiKey: 'Obtenir une clé',
-                
-                phase0: 'Préparation',
-                phase1: 'Étape 1 : Vocabulaire',
-                phase2: 'Étape 2 : Synthèse',
-                phase3: 'Étape 3 : Retour',
-                phase4: 'Étape 4 : Révision',
-                
-                back: 'Retour',
-                start: 'Commencer',
-                next: 'Suivant',
-                submit: 'Soumettre',
-                checkAnswer: 'Voir la réponse',
-                continue: 'Continuer',
-                finish: 'Terminer',
-                
-                selectLevel: 'Sélectionnez votre niveau',
-                inputArticle: 'Collez l\'article ou la transcription ici',
-                wordCount: 'Mots',
-                estimatedTime: 'Temps estimé',
-                minutes: 'min',
-                
-                levelDesc: {
-                    A1: 'Débutant - Vocabulaire de base',
-                    A2: 'Élémentaire - Conversations quotidiennes',
-                    B1: 'Intermédiaire - Usage indépendant',
-                    B2: 'Intermédiaire supérieur - Expression fluide',
-                    C1: 'Avancé - Structures complexes',
-                    C2: 'Maîtrise - Niveau quasi-natif'
-                },
-                
-                todayReview: 'À réviser aujourd\'hui',
-                words: 'mots',
-                startReview: 'Commencer',
-                proficient: 'Maîtrisé',
-                hesitant: 'Hésitant',
-                forgotten: 'Oublié',
-                typeWord: 'Épelez le mot',
-                
-                importFormat: 'Format',
-                importExample: 'Exemple',
-                importBtn: 'Importer',
-                
-                loading: 'Génération...',
-                generating: 'Génération du matériel...',
-                success: 'Succès',
-                error: 'Erreur',
-                saved: 'Sauvegardé',
-                noApiKey: 'Veuillez d\'abord configurer la clé API',
-                noInput: 'Veuillez saisir le texte',
-                noDueReviews: 'Aucune révision due',
-                allDone: 'Toutes les révisions terminées',
-                downloadPdf: 'Télécharger PDF',
-                saveRecord: 'Sauvegarder la session',
-                recordSaved: 'Session sauvegardée',
-                pdfGenerating: 'Génération du PDF...'
+<script>
+// ==================== 配置 ====================
+const CONFIG = {
+    WORKER_URL: 'https://delfdalfassistant.yifan6760.workers.dev',
+    SUPABASE_URL: '',       // 填入你的Supabase URL
+    SUPABASE_ANON_KEY: '',  // 填入你的Supabase anon key
+};
+
+// ==================== 翻译 ====================
+const T = {
+    zh: {
+        appTitle:'DALF 智能写作工作室', selectMode:'选择学习模式',
+        learningMode:'学习模式', learningDesc:'从文章中学习词块，完成练习和写作输出',
+        reviewMode:'复习模式', reviewDesc:'复习已学词块，遗忘曲线智能推送',
+        importMode:'导入复习', importDesc:'手动导入词块进行复习',
+        phase1:'阶段一：词块学习', phase2:'阶段二：词块练习', phase3:'阶段三：智能批改', phase4:'阶段四：闪卡复习',
+        back:'返回', start:'开始学习', next:'下一步', submit:'提交答案', finish:'完成',
+        selectLevel:'选择你的法语等级', inputArticle:'粘贴文章或听力转录内容',
+        wordCount:'字数', estimatedTime:'预计学习时间', minutes:'分钟',
+        levelDesc:{ A1:'入门级 - 基础词汇和简单句型', A2:'基础级 - 日常对话能力', B1:'进阶级 - 独立运用语言', B2:'高阶级 - 流利表达观点', C1:'精通级 - 高级词汇和复杂结构', C2:'母语级 - 接近母语水平' },
+        todayReview:'今日待复习', words:'个词块', startReview:'开始复习',
+        proficient:'熟练', hesitant:'犹豫', forgotten:'忘记', typeWord:'请输入这个词块',
+        importFormat:'格式', importExample:'例如', importBtn:'导入',
+        generating:'正在分析文章，提取词块...', success:'成功', error:'错误', saved:'已保存',
+        noInput:'请输入文章内容', noDueReviews:'暂无待复习内容', allDone:'今日复习已完成',
+        downloadPdf:'下载PDF', saveRecord:'保存记录', recordSaved:'记录已保存', pdfGenerating:'生成PDF...',
+        chunksAdded:'个词块已自动加入复习库', resumeTitle:'发现未完成的学习',
+    },
+    en: {
+        appTitle:'DALF Writing Studio', selectMode:'Select Mode',
+        learningMode:'Learning', learningDesc:'Learn chunks from articles, practise and write',
+        reviewMode:'Review', reviewDesc:'Review learned chunks with spaced repetition',
+        importMode:'Import', importDesc:'Import custom chunks for review',
+        phase1:'Phase 1: Chunks', phase2:'Phase 2: Practice', phase3:'Phase 3: Feedback', phase4:'Phase 4: Flashcards',
+        back:'Back', start:'Start', next:'Next', submit:'Submit', finish:'Finish',
+        selectLevel:'Select Your Level', inputArticle:'Paste article or transcript',
+        wordCount:'Words', estimatedTime:'Est. Time', minutes:'mins',
+        levelDesc:{ A1:'Beginner', A2:'Elementary', B1:'Intermediate', B2:'Upper-Intermediate', C1:'Advanced', C2:'Proficient' },
+        todayReview:'Due Today', words:'chunks', startReview:'Start Review',
+        proficient:'Proficient', hesitant:'Hesitant', forgotten:'Forgotten', typeWord:'Type the chunk',
+        importFormat:'Format', importExample:'Example', importBtn:'Import',
+        generating:'Analysing article, extracting chunks...', success:'Success', error:'Error', saved:'Saved',
+        noInput:'Please input text', noDueReviews:'No reviews due', allDone:'All done for today',
+        downloadPdf:'Download PDF', saveRecord:'Save Record', recordSaved:'Record saved', pdfGenerating:'Generating PDF...',
+        chunksAdded:'chunks added to review', resumeTitle:'Unfinished session found',
+    },
+    fr: {
+        appTitle:'DALF Studio d\'Écriture', selectMode:'Choisissez le mode',
+        learningMode:'Apprentissage', learningDesc:'Apprendre des expressions à partir d\'articles',
+        reviewMode:'Révision', reviewDesc:'Réviser les expressions avec la courbe d\'oubli',
+        importMode:'Importer', importDesc:'Importer des expressions personnalisées',
+        phase1:'Étape 1 : Expressions', phase2:'Étape 2 : Exercices', phase3:'Étape 3 : Corrections', phase4:'Étape 4 : Révision',
+        back:'Retour', start:'Commencer', next:'Suivant', submit:'Soumettre', finish:'Terminer',
+        selectLevel:'Sélectionnez votre niveau', inputArticle:'Collez l\'article ici',
+        wordCount:'Mots', estimatedTime:'Temps estimé', minutes:'min',
+        levelDesc:{ A1:'Débutant', A2:'Élémentaire', B1:'Intermédiaire', B2:'Intermédiaire sup.', C1:'Avancé', C2:'Maîtrise' },
+        todayReview:'À réviser', words:'expressions', startReview:'Commencer',
+        proficient:'Maîtrisé', hesitant:'Hésitant', forgotten:'Oublié', typeWord:'Saisissez l\'expression',
+        importFormat:'Format', importExample:'Exemple', importBtn:'Importer',
+        generating:'Analyse de l\'article...', success:'Succès', error:'Erreur', saved:'Sauvegardé',
+        noInput:'Veuillez saisir le texte', noDueReviews:'Aucune révision due', allDone:'Révisions terminées',
+        downloadPdf:'Télécharger PDF', saveRecord:'Sauvegarder', recordSaved:'Sauvegardé', pdfGenerating:'Génération PDF...',
+        chunksAdded:'expressions ajoutées', resumeTitle:'Session non terminée',
+    }
+};
+
+// ==================== ÉTAT ====================
+class AppState {
+    constructor() {
+        this.lang = localStorage.getItem('app_lang') || 'zh';
+        this.currentMode = null;
+        this.currentPhase = 0;
+        this.userLevel = localStorage.getItem('user_level') || null;
+        this.articleText = '';
+        this.learningData = { vocabulary: '', vocabularyChunks: [], cloze: '', feedback: '' };
+        this.reviewSchedule = [];
+        this._loadReviewSchedule();
+    }
+
+    t(key) {
+        const keys = key.split('.');
+        let v = T[this.lang];
+        for (const k of keys) v = v?.[k];
+        return v || key;
+    }
+
+    setLang(lang) { this.lang = lang; localStorage.setItem('app_lang', lang); }
+    setLevel(level) { this.userLevel = level; localStorage.setItem('user_level', level); }
+
+    _loadReviewSchedule() {
+        try { this.reviewSchedule = JSON.parse(localStorage.getItem('review_schedule') || '[]'); }
+        catch(e) { this.reviewSchedule = []; }
+    }
+
+    saveReviewSchedule() { localStorage.setItem('review_schedule', JSON.stringify(this.reviewSchedule)); }
+
+    saveProgress() {
+        localStorage.setItem('session_progress', JSON.stringify({
+            currentMode: this.currentMode, currentPhase: this.currentPhase,
+            userLevel: this.userLevel, articleText: this.articleText,
+            learningData: this.learningData, savedAt: new Date().toISOString()
+        }));
+    }
+
+    loadProgress() {
+        try { return JSON.parse(localStorage.getItem('session_progress')); } catch(e) { return null; }
+    }
+
+    restoreProgress(s) {
+        this.currentMode = s.currentMode; this.currentPhase = s.currentPhase;
+        this.userLevel = s.userLevel; this.articleText = s.articleText;
+        this.learningData = s.learningData;
+    }
+
+    clearProgress() { localStorage.removeItem('session_progress'); }
+
+    getTodayReviews() {
+        const today = new Date().toISOString().split('T')[0];
+        return this.reviewSchedule.filter(r => r.reviewDate === today);
+    }
+
+    calcTime(text) {
+        if (!text || !this.userLevel) return 15;
+        const wc = text.trim().split(/\s+/).length;
+        const rates = { A1:8, A2:6, B1:5, B2:4, C1:3, C2:2.5 };
+        return Math.max(8, Math.min(60, Math.ceil((wc/100) * (rates[this.userLevel]||5)) + 13));
+    }
+
+    // 词块加入复习库（去重）
+    addChunksToReview(chunks) {
+        const today = new Date().toISOString().split('T')[0];
+        let added = 0;
+        chunks.forEach(c => {
+            if (c.word && c.meaning && !this.reviewSchedule.some(r => r.word === c.word)) {
+                this.reviewSchedule.push({
+                    word: c.word, meaning: c.meaning, example: c.example || '',
+                    type: c.type || 'EXPRESSION', reviewDate: today, level: 1, attempt: 0
+                });
+                added++;
             }
-        };
+        });
+        this.saveReviewSchedule();
+        return added;
+    }
+}
 
-        // ==================== 状态管理 ====================
-        class AppState {
-            constructor() {
-                this.currentLang = localStorage.getItem('app_lang') || 'zh';
-                this.apiKey = localStorage.getItem('anthropic_api_key') || '';
-                this.currentMode = null;
-                this.currentPhase = 0;
-                this.userLevel = localStorage.getItem('user_level') || null;
-                this.articleText = '';
-                this.learningData = {
-                    vocabulary: '',
-                    cloze: '',
-                    feedback: '',
-                    flashcards: []
-                };
-                this.reviewSchedule = [];
-                this.loadReviewSchedule();
-            }
+const state = new AppState();
 
-            t(key) {
-                const keys = key.split('.');
-                let value = TRANSLATIONS[this.currentLang];
-                for (const k of keys) {
-                    value = value?.[k];
-                }
-                return value || key;
-            }
+// ==================== SUPABASE ====================
+let sb = null;
+function initSB() {
+    if (CONFIG.SUPABASE_URL && CONFIG.SUPABASE_ANON_KEY && !sb)
+        sb = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+}
 
-            setLanguage(lang) {
-                this.currentLang = lang;
-                localStorage.setItem('app_lang', lang);
-            }
+async function sbInsert(table, rows) {
+    initSB();
+    if (!sb) return;
+    try { await sb.from(table).insert(rows); } catch(e) { console.warn('Supabase error:', e); }
+}
 
-            setApiKey(key) {
-                this.apiKey = key;
-                localStorage.setItem('anthropic_api_key', key);
-            }
+// ==================== CLAUDE API ====================
+async function callClaude(userMsg, sysPrompt, raw=false) {
+    const res = await fetch(CONFIG.WORKER_URL + '/api/claude', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            model: 'claude-sonnet-4-20250514',
+            max_tokens: 4000,
+            system: sysPrompt,
+            messages: [{ role: 'user', content: userMsg }]
+        })
+    });
+    if (!res.ok) { const e = await res.json(); throw new Error(e.error?.message || 'API Error'); }
+    const data = await res.json();
+    const text = data.content.find(c => c.type === 'text')?.text || '';
+    return raw ? text : marked.parse(text);
+}
 
-            setLevel(level) {
-                this.userLevel = level;
-                localStorage.setItem('user_level', level);
-            }
+// ==================== 等级配置 ====================
+const LEVEL_CFG = {
+    A1: {
+        vocab: '只提取最基础的高频生活词汇（CECR A1），避免复杂词汇',
+        chunkType: '单个高频词或最简单固定搭配（如 il y a, c\'est, avoir + nom）',
+        chunkRule: '词块必须是原形框架：✅ "se lever" ❌ "se lève"；✅ "prendre le bus" ❌ "prend le bus"',
+        exercise: '写作20-30字，只用现在时，句子极短',
+        feedback: '以鼓励为主，只指出1-2个关键错误，语气温和'
+    },
+    A2: {
+        vocab: '提取日常交流实用词汇（CECR A2），包含动词短语和固定搭配',
+        chunkType: '动词框架和日常搭配（如 avoir besoin de + inf., être en train de + inf.）',
+        chunkRule: '词块必须是动词原形框架，不能截取变位片段。✅ "durer + durée" ✅ "prendre + durée + pour + inf." ❌ "dure environ"（变位片段，不可迁移）',
+        exercise: '写作30-50字，可用过去时和将来时',
+        feedback: '鼓励为主，指出2-3个错误，重点解释语法规则'
+    },
+    B1: {
+        vocab: '提取中级表达词汇（CECR B1），包含常用词块和搭配',
+        chunkType: '实用句式框架（如 il est important de + inf., en ce qui concerne + nom）',
+        chunkRule: '词块必须是可迁移的句式框架，用占位符（+ inf. / + nom）标注可替换部分',
+        exercise: '写作50-80字，要求逻辑连贯',
+        feedback: '平衡鼓励和纠错，指出3-4个问题，要求改写错误句子'
+    },
+    B2: {
+        vocab: '提取高频学术/论述词汇（CECR B2），重点词块和搭配',
+        chunkType: '论述框架（如 par conséquent, il convient de + inf., dans la mesure où + prop.）',
+        chunkRule: '词块必须是论述写作中可直接套用的表达框架，标注句法结构',
+        exercise: '写作80-120字，要求有论点和论据',
+        feedback: '严格指出所有错误，要求文体一致性'
+    },
+    C1: {
+        vocab: '提取高级表达和复杂结构（CECR C1），重点论述语块',
+        chunkType: '高级论述语块（如 force est de constater que, il n\'en demeure pas moins que）',
+        chunkRule: '词块必须体现C1级别语言精确性，标注使用语境（正式/书面）',
+        exercise: '写作120-180字，要求论证严密有层次',
+        feedback: '按DALF C1标准严格批改，重点评估论点发展和语言精确性'
+    },
+    C2: {
+        vocab: '提取接近母语水平的高级表达（CECR C2），包含修辞和文体变化',
+        chunkType: '修辞表达和文体语块（如 loin s\'en faut, nonobstant + nom）',
+        chunkRule: '词块必须体现母语者自然表达，包含文体标注（书面正式/文学/新闻）',
+        exercise: '写作180-250字，文体风格统一且精准',
+        feedback: '按母语水平标准批改，重点评估文体、修辞和语言优雅度'
+    }
+};
 
-            loadReviewSchedule() {
-                const data = localStorage.getItem('review_schedule');
-                if (data) {
-                    try {
-                        this.reviewSchedule = JSON.parse(data);
-                    } catch (e) {
-                        this.reviewSchedule = [];
-                    }
-                }
-            }
+// ==================== PROMPTS ====================
+function getPrompts() {
+    const lv = state.userLevel || 'B1';
+    const c = LEVEL_CFG[lv] || LEVEL_CFG.B1;
 
-            saveReviewSchedule() {
-                localStorage.setItem('review_schedule', JSON.stringify(this.reviewSchedule));
-            }
+    const vocabPrompt = `你是专业的DELF/DALF法语教师，帮助${lv}水平学生积累写作词块。
 
-            // ---- 进度保存/恢复 ----
-            saveProgress() {
-                const session = {
-                    currentMode: this.currentMode,
-                    currentPhase: this.currentPhase,
-                    userLevel: this.userLevel,
-                    articleText: this.articleText,
-                    learningData: this.learningData,
-                    savedAt: new Date().toISOString()
-                };
-                localStorage.setItem('session_progress', JSON.stringify(session));
-            }
+核心任务：从文章提取7-10个最值得学习的词块/语块。
 
-            loadProgress() {
-                const raw = localStorage.getItem('session_progress');
-                if (!raw) return null;
-                try {
-                    return JSON.parse(raw);
-                } catch (e) {
-                    return null;
-                }
-            }
+等级要求（${lv}）：
+- 词汇范围：${c.vocab}
+- 词块类型：${c.chunkType}
+- 词块规范：${c.chunkRule}
 
-            restoreProgress(session) {
-                this.currentMode = session.currentMode;
-                this.currentPhase = session.currentPhase;
-                this.userLevel = session.userLevel;
-                this.articleText = session.articleText;
-                this.learningData = session.learningData;
-            }
+词块定义：可从原文抽离、在新语境直接套用的固定表达单位（原形框架）。
 
-            clearProgress() {
-                localStorage.removeItem('session_progress');
-            }
+输出格式：先输出Markdown内容，最后输出JSON数据块。
 
-            getTodayReviews() {
-                const today = new Date().toISOString().split('T')[0];
-                return this.reviewSchedule.filter(r => r.reviewDate === today);
-            }
+## 📚 词块学习（${lv}）
 
-            calculateEstimatedTime(text) {
-                if (!text || !this.userLevel) return 15;
-                
-                const wordCount = text.trim().split(/\s+/).length;
-                const baseRates = {
-                    A1: 8, A2: 6, B1: 5, B2: 4, C1: 3, C2: 2.5
-                };
-                
-                const rate = baseRates[this.userLevel] || 5;
-                let time = Math.ceil((wordCount / 100) * rate);
-                time += 13; // 练习和复习时间
-                
-                return Math.max(8, Math.min(60, time));
-            }
-        }
-
-        const state = new AppState();
-
-        // ==================== 配置区（部署时填写）====================
-        const CONFIG = {
-            // 部署Cloudflare Worker后，把Worker地址填在这里
-            // 例如: 'https://dalf-proxy.yourname.workers.dev'
-            WORKER_URL: 'https://delfdalfassistant.yifan6760.workers.dev',
-            // Supabase配置（去supabase.com创建项目后填写）
-            SUPABASE_URL: '',
-            SUPABASE_ANON_KEY: '',
-        };
-
-        // ==================== Supabase 初始化 ====================
-        let supabaseClient = null;
-        function initSupabase() {
-            if (CONFIG.SUPABASE_URL && CONFIG.SUPABASE_ANON_KEY && !supabaseClient) {
-                supabaseClient = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
-            }
-        }
-
-        async function saveSessionToSupabase(sessionData) {
-            initSupabase();
-            if (!supabaseClient) return; // 未配置则跳过
-            try {
-                await supabaseClient.from('practice_sessions').insert([sessionData]);
-            } catch (e) {
-                console.warn('Supabase save failed:', e);
-            }
-        }
-
-        // ==================== Claude API ====================
-        async function callClaude(userMessage, systemPrompt) {
-            if (!state.apiKey) {
-                showToast(state.t('noApiKey'));
-                throw new Error('No API Key');
-            }
-
-            const payload = {
-                model: 'claude-sonnet-4-20250514',
-                max_tokens: 4000,
-                system: systemPrompt,
-                messages: [{ role: 'user', content: userMessage }]
-            };
-
-            try {
-                let response;
-
-                if (CONFIG.WORKER_URL) {
-                    // 通过Cloudflare Worker代理（推荐，API Key在后端）
-                    response = await fetch(CONFIG.WORKER_URL + '/api/claude', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-                } else {
-                    // 直连（本地调试或未配置Worker时使用）
-                    response = await fetch('https://api.anthropic.com/v1/messages', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'x-api-key': state.apiKey,
-                            'anthropic-version': '2023-06-01'
-                        },
-                        body: JSON.stringify(payload)
-                    });
-                }
-
-                if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.error?.message || 'API Error');
-                }
-
-                const data = await response.json();
-                const text = data.content.find(c => c.type === 'text')?.text || '';
-                return marked.parse(text);
-            } catch (error) {
-                console.error('Claude API Error:', error);
-                showToast(state.t('error') + ': ' + error.message);
-                throw error;
-            }
-        }
-
-        // ==================== System Prompts ====================
-        // 等级配置：定义每个等级的词汇难度和练习要求
-        const LEVEL_CONFIG = {
-            A1: {
-                vocabDesc: '只提取最基础的高频生活词汇（CECR A1范围），避免任何复杂词汇',
-                chunkType: '单个高频词或最简单的固定搭配（如 il y a, c\'est）',
-                exerciseDesc: '填空用文章原词，句子极短，写作20-30字，句式只用现在时',
-                feedbackStyle: '以鼓励为主，只指出最关键的1-2个错误，语气温和'
-            },
-            A2: {
-                vocabDesc: '提取日常交流中的实用词汇（CECR A2范围），少量固定搭配',
-                chunkType: '日常词汇和简单动词短语（如 avoir besoin de, être en train de）',
-                exerciseDesc: '填空可用近形词，写作30-50字，可用过去时和将来时',
-                feedbackStyle: '鼓励为主，指出2-3个错误，重点解释语法规则'
-            },
-            B1: {
-                vocabDesc: '提取中级表达词汇（CECR B1范围），包含常用词块和搭配',
-                chunkType: '实用词块和常见句式（如 il est important de, en ce qui concerne）',
-                exerciseDesc: '填空可用同义词替换，写作50-80字，要求逻辑连贯',
-                feedbackStyle: '平衡鼓励和纠错，指出3-4个问题，要求改写错误句子'
-            },
-            B2: {
-                vocabDesc: '提取高频学术/论述词汇（CECR B2范围），重点词块和搭配',
-                chunkType: '论述词块和连接表达（如 par conséquent, il convient de noter que）',
-                exerciseDesc: '填空要求近义词辨析，写作80-120字，要求有论点和论据',
-                feedbackStyle: '严格指出所有错误，要求文体一致性，评分要有依据'
-            },
-            C1: {
-                vocabDesc: '提取高级表达和复杂结构（CECR C1范围），重点论述语块和搭配',
-                chunkType: '高级论述语块（如 force est de constater que, il n\'en demeure pas moins que）',
-                exerciseDesc: '填空要求精确辨析，写作120-180字，要求论证严密有层次',
-                feedbackStyle: '按DALF C1标准严格批改，重点评估论点发展和语言精确性'
-            },
-            C2: {
-                vocabDesc: '提取接近母语水平的高级表达（CECR C2范围），包含修辞和文体变化',
-                chunkType: '修辞表达和文体语块（如 loin s\'en faut, à cet égard）',
-                exerciseDesc: '填空要求文体匹配，写作180-250字，要求文体风格统一且精准',
-                feedbackStyle: '按母语水平标准批改，重点评估文体、修辞和语言优雅度'
-            }
-        };
-
-        function getSystemPrompts() {
-            const level = state.userLevel || 'B1';
-            const cfg = LEVEL_CONFIG[level] || LEVEL_CONFIG['B1'];
-
-            return {
-                vocabulary: `你是专业的DELF/DALF法语教师，专门帮助${level}水平的学生突破阅读障碍。
-
-**核心任务**：从文章中提取7到10个最值得学习的词块/语块，帮助学生积累可复用的表达。
-
-**等级要求（${level}）**：
-- 词汇范围：${cfg.vocabDesc}
-- 词块类型：${cfg.chunkType}
-
-**严格要求**：
-- 必须提取7-10个词块，不多不少
-- 优先选择在写作中可以直接复用的表达，而不是孤立词汇
-- 每个词块必须标注它在原文中的上下文
-
-**输出格式（Markdown）**：
-
-## 📚 词块学习（${level}）
-
-### 1. [词块] (词性/类型)
+### 1. [词块原形框架] (类型)
 **中文释义**：[翻译]
-**原文语境**：[摘录原文中的句子]
-**常见搭配**：[2-3个]
-**写作示例**：[一个可以直接用在写作中的例句]
-**近义表达**：[1-2个同级别替换]
+**原文语境**：[原文完整句子]
+**用法框架**：[词块 + 占位说明]
+**写作示例**：[新语境完整例句，不能照抄原文]
+**近义表达**：[1-2个同级替换]
 
 ---
 
-每个词块用 --- 分隔，严格控制在7-10个。`,
+（重复7-10个）
 
-                cloze: `你是专业的DELF/DALF法语教师，为${level}水平学生设计练习。
+\`\`\`json
+[
+  {"word":"词块原形","meaning":"中文释义","example":"写作示例句","type":"词块类型"},
+  ...
+]
+\`\`\``;
 
-**等级要求（${level}）**：${cfg.exerciseDesc}
+    const clozePrompt = `你是专业的DELF/DALF法语教师，为${lv}水平学生设计词块巩固练习。
 
-**核心原则**：练习素材必须来自学生刚学过的词块和文章语境，实现"一鱼多吃"——用同一篇文章同时训练词块理解和写作输出。
+等级要求：${c.exercise}
 
-**输出格式**：
+核心原则：
+1. 练习必须使用学生刚学的词块框架，检验能否正确套用
+2. 填空提供词块框架（如"prendre + ___"），不是猜单个词
+3. 写作任务要求主动使用本次词块
 
-## ✍️ 词块巩固练习（${level}）
+## ✍️ 词块巩固练习（${lv}）
 
 ### 练习一：词块填空
-根据上下文，从刚学的词块中选择合适的填入空白处：
+从括号提示的词块框架中选择并正确变位填入：
 
-1. [句子，留空处用______标注]
-2. [句子]
-3. [句子]
-（共4-5题）
+1. [句子______句子续]（提示：[词块框架]）
+2. [句子______句子续]（提示：[词块框架]）
+3. [句子______句子续]（提示：[词块框架]）
+4. [句子______句子续]（提示：[词块框架]）
+5. [句子______句子续]（提示：[词块框架]）
 
-### 练习二：句子改写
-用刚学的词块改写以下句子，使表达更准确：
+### 练习二：词块改写
+用括号中给出的词块框架改写句子：
 
 1. 原句：[简单表达]
-   提示：试用 [某词块]
+   改写（使用[词块框架]）：______
 
-### 练习三：写作输出
-基于文章主题，完成以下写作任务：
-[具体题目]
-要求：${cfg.exerciseDesc.split('，').pop()}
-尽量使用本次学习的词块。`,
+2. 原句：[简单表达]
+   改写（使用[词块框架]）：______
 
-                feedback: `你是专业的DELF/DALF法语教师，批改${level}水平学生的练习。
+### 练习三：写作输出（${c.exercise.split('，').find(s=>s.includes('字'))||'50-100字'}）
+基于文章主题完成写作，至少使用3个本次学习的词块：
 
-**批改标准（${level}）**：${cfg.feedbackStyle}
+[具体写作题目]`;
 
-**重要**：批改时必须引用学生的原句，让学生清楚看到哪里被修改了。
+    const feedbackPrompt = `你是专业的DELF/DALF法语教师，批改${lv}水平学生的练习。
 
-**输出格式**：
+批改标准（${lv}）：${c.feedback}
 
-## ✅ 做得好的地方
-- [具体指出1-2处用得好的词块或表达]
+特别关注：检查学生是否正确使用词块框架（变位是否准确、搭配是否正确）。
+
+## ✅ 词块运用亮点
+- [具体指出正确使用的词块，引用原句]
 
 ## 🔧 需要改进
 ### 问题 1
 **你写的**：[原句]
 **建议改为**：[修改后]
-**原因**：[简短解释]
+**原因**：[简短解释，重点说明词块用法]
 
-（按等级指出相应数量的问题）
-
-## 💡 词块使用回顾
-[评价学生是否正确使用了本次学习的词块，给出具体建议]
+## 💡 词块使用总结
+[评价对本次词块的整体掌握，给出下一步建议]
 
 ## 📊 本次评分
 - 词块运用：[X]/5
-- 语法准确：[X]/5  
+- 语法准确：[X]/5
 - 内容表达：[X]/5
 
-**总评**：[${cfg.feedbackStyle.includes('鼓励') ? '温和鼓励性' : '专业客观'}的总结]`
-            };
-        }
+**总评**：[${c.feedback.includes('鼓励')?'温和鼓励性':'专业客观'}的总结]`;
 
-        // ==================== UI 渲染 ====================
-        function render() {
-            const app = document.getElementById('app');
+    return { vocab: vocabPrompt, cloze: clozePrompt, feedback: feedbackPrompt };
+}
 
-            if (!state.apiKey) {
-                app.innerHTML = renderApiSetup();
-                return;
-            }
+// ==================== 解析词块JSON ====================
+function parseChunks(rawText) {
+    try {
+        const m = rawText.match(/```json\s*([\s\S]*?)\s*```/);
+        if (!m) return [];
+        const arr = JSON.parse(m[1]);
+        return Array.isArray(arr) ? arr.filter(c => c.word && c.meaning) : [];
+    } catch(e) { return []; }
+}
 
-            if (!state.currentMode) {
-                app.innerHTML = renderModeSelection();
-                return;
-            }
+// ==================== RENDER ====================
+function render() {
+    const app = document.getElementById('app');
+    if (!CONFIG.WORKER_URL) { app.innerHTML = renderNoWorker(); return; }
+    if (!state.currentMode) { app.innerHTML = renderHome(); return; }
+    if (state.currentMode === 'learning') {
+        app.innerHTML = state.currentPhase === 0 ? renderLevelInput() : renderLearnShell();
+    } else if (state.currentMode === 'review') {
+        app.innerHTML = renderReview();
+    } else if (state.currentMode === 'import') {
+        app.innerHTML = renderImport();
+    }
+}
 
-            if (state.currentMode === 'learning') {
-                if (state.currentPhase === 0) {
-                    app.innerHTML = renderLevelSelection();
-                } else {
-                    app.innerHTML = renderLearningFlow();
-                }
-            } else if (state.currentMode === 'review') {
-                app.innerHTML = renderReviewMode();
-            } else if (state.currentMode === 'import') {
-                app.innerHTML = renderImportMode();
-            }
-        }
+function renderNoWorker() {
+    return `<div class="content-card" style="max-width:600px;margin:60px auto;text-align:center;">
+        <p style="color:var(--text-secondary);">Worker URL not configured. Please set CONFIG.WORKER_URL.</p>
+    </div>`;
+}
 
-        function renderApiSetup() {
-            return `
-                <div class="fade-in">
-                    <div class="api-setup">
-                        <span class="warning-badge">⚙️ ${state.t('apiSetup')}</span>
-                        <h2 style="font-size: 24px; margin-bottom: 12px; font-weight: 700;">${state.t('apiKeyLabel')}</h2>
-                        <input type="password" id="api-key-input" placeholder="${state.t('apiKeyPlaceholder')}" value="${state.apiKey}">
-                        <div class="flex gap-12 mt-20">
-                            <button class="btn btn-primary" onclick="saveApiKey()">${state.t('saveApiKey')}</button>
-                            <a href="https://console.anthropic.com/settings/keys" target="_blank" class="btn btn-secondary" style="text-decoration: none;">${state.t('getApiKey')}</a>
-                        </div>
+function renderHome() {
+    const due = state.getTodayReviews().length;
+    return `<div class="fade-in">
+        <h1 class="text-center" style="font-size:42px;font-weight:700;margin-bottom:16px;font-family:'Crimson Pro',serif;">${state.t('appTitle')}</h1>
+        <p class="text-center" style="font-size:16px;color:var(--text-secondary);margin-bottom:60px;">${state.t('selectMode')}</p>
+        <div class="mode-grid">
+            <div class="mode-card" onclick="selectMode('learning')">
+                <div class="mode-icon">📚</div>
+                <div class="mode-title">${state.t('learningMode')}</div>
+                <div class="mode-desc">${state.t('learningDesc')}</div>
+            </div>
+            <div class="mode-card" onclick="selectMode('review')">
+                <div class="mode-icon">🔄</div>
+                <div class="mode-title">${state.t('reviewMode')}</div>
+                <div class="mode-desc">${state.t('reviewDesc')}</div>
+                ${due > 0 ? `<div style="margin-top:20px;padding:12px;background:rgba(166,123,123,0.1);border-radius:8px;color:var(--accent-warm);font-weight:600;font-size:14px;">${state.t('todayReview')}: ${due} ${state.t('words')}</div>` : ''}
+            </div>
+            <div class="mode-card" onclick="selectMode('import')">
+                <div class="mode-icon">📥</div>
+                <div class="mode-title">${state.t('importMode')}</div>
+                <div class="mode-desc">${state.t('importDesc')}</div>
+            </div>
+        </div>
+    </div>`;
+}
+
+function renderLevelInput() {
+    const t = state.calcTime(state.articleText);
+    return `<div class="fade-in"><div class="learning-content">
+        ${!state.userLevel ? `
+            <div class="content-card text-center">
+                <h2 class="section-title">${state.t('selectLevel')}</h2>
+                <div class="mode-grid" style="margin-top:40px;">
+                    ${['A1','A2','B1','B2','C1','C2'].map(lv=>`
+                        <div class="mode-card" onclick="selectLevel('${lv}')" style="padding:32px;">
+                            <div style="font-size:36px;font-weight:700;margin-bottom:12px;font-family:'Crimson Pro',serif;">${lv}</div>
+                            <div style="font-size:13px;color:var(--text-secondary);">${state.t('levelDesc.'+lv)}</div>
+                        </div>`).join('')}
+                </div>
+            </div>` : `
+            <div class="content-card">
+                <div class="flex justify-between items-center mb-20">
+                    <div class="flex items-center gap-12">
+                        <span class="level-badge">${state.userLevel}</span>
+                        <span class="time-estimate">
+                            <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            ${state.t('estimatedTime')}: ${t} ${state.t('minutes')}
+                        </span>
+                    </div>
+                    <button class="btn btn-secondary" onclick="state.setLevel(null);render();">${state.t('back')}</button>
+                </div>
+                <label class="input-label">${state.t('inputArticle')}</label>
+                <textarea id="article-input" style="min-height:300px;" oninput="updateWC()">${state.articleText}</textarea>
+                <div class="flex justify-between items-center mt-20">
+                    <span id="wc" style="color:var(--text-secondary);font-size:14px;">0 ${state.t('wordCount')}</span>
+                    <div class="flex gap-12">
+                        <button class="btn btn-secondary" onclick="backToHome()">${state.t('back')}</button>
+                        <button class="btn btn-primary" onclick="startLearning()">${state.t('start')}</button>
                     </div>
                 </div>
-            `;
-        }
+            </div>`}
+    </div></div>`;
+}
 
-        function renderModeSelection() {
-            const todayReviews = state.getTodayReviews();
-            
-            return `
-                <div class="fade-in">
-                    <h1 class="text-center" style="font-size: 42px; font-weight: 700; margin-bottom: 16px; font-family: 'Crimson Pro', serif;">
-                        ${state.t('appTitle')}
-                    </h1>
-                    <p class="text-center" style="font-size: 16px; color: var(--text-secondary); margin-bottom: 60px;">
-                        ${state.t('selectMode')}
-                    </p>
-                    
-                    <div class="mode-grid">
-                        <div class="mode-card" onclick="selectMode('learning')">
-                            <div class="mode-icon">📚</div>
-                            <div class="mode-title">${state.t('learningMode')}</div>
-                            <div class="mode-desc">${state.t('learningDesc')}</div>
-                        </div>
-                        
-                        <div class="mode-card" onclick="selectMode('review')">
-                            <div class="mode-icon">🔄</div>
-                            <div class="mode-title">${state.t('reviewMode')}</div>
-                            <div class="mode-desc">${state.t('reviewDesc')}</div>
-                            ${todayReviews.length > 0 ? `
-                                <div style="margin-top: 20px; padding: 12px; background: rgba(166, 123, 123, 0.1); border-radius: 8px; color: var(--accent-warm); font-weight: 600; font-size: 14px;">
-                                    ${state.t('todayReview')}: ${todayReviews.length} ${state.t('words')}
-                                </div>
-                            ` : ''}
-                        </div>
-                        
-                        <div class="mode-card" onclick="selectMode('import')">
-                            <div class="mode-icon">📥</div>
-                            <div class="mode-title">${state.t('importMode')}</div>
-                            <div class="mode-desc">${state.t('importDesc')}</div>
+function renderLearnShell() {
+    const emojis = ['📄','📚','✍️','💬','🎴'];
+    return `<div class="fade-in">
+        <div class="learning-header">
+            <div class="progress-nav">
+                ${emojis.map((e,i)=>`
+                    <div style="position:relative;">
+                        <div class="progress-dot ${i===state.currentPhase?'active':''} ${i<state.currentPhase?'completed':''}">
+                            ${i<=state.currentPhase?`<div class="progress-emoji">${e}</div>`:''}
                         </div>
                     </div>
+                    ${i<emojis.length-1?'<div class="progress-line"></div>':''}`).join('')}
+            </div>
+            <div class="flex items-center gap-12">
+                <span class="level-badge">${state.userLevel}</span>
+                <button class="btn btn-secondary" onclick="state.currentPhase=0;render();">${state.t('back')}</button>
+            </div>
+        </div>
+        <div class="learning-content"><div id="phase-content"></div></div>
+    </div>`;
+}
+
+function renderReview() {
+    const due = state.getTodayReviews();
+    if (!due.length) return `<div class="fade-in text-center" style="padding:100px 20px;">
+        <div style="font-size:64px;margin-bottom:24px;">✅</div>
+        <h2 style="font-size:32px;font-weight:700;margin-bottom:16px;">${state.t('allDone')}</h2>
+        <p style="color:var(--text-secondary);margin-bottom:40px;">${state.t('noDueReviews')}</p>
+        <button class="btn btn-secondary" onclick="backToHome()">${state.t('back')}</button>
+    </div>`;
+    return renderCard(due[0]);
+}
+
+function renderImport() {
+    return `<div class="fade-in"><div class="learning-content"><div class="content-card">
+        <h2 class="section-title">${state.t('importMode')}</h2>
+        <p style="margin-bottom:12px;color:var(--text-secondary);">${state.t('importFormat')}: ${state.t('importExample')}</p>
+        <p style="font-family:monospace;color:var(--text-secondary);margin-bottom:20px;">
+            avoir besoin de + inf. | 需要做某事<br>
+            en ce qui concerne + nom | 关于……<br>
+            il est important de + inf. | 做某事很重要
+        </p>
+        <textarea id="import-input" placeholder="avoir besoin de + inf. | 需要做某事" style="min-height:300px;"></textarea>
+        <div class="flex justify-between mt-20">
+            <button class="btn btn-secondary" onclick="backToHome()">${state.t('back')}</button>
+            <button class="btn btn-primary" onclick="doImport()">${state.t('importBtn')}</button>
+        </div>
+    </div></div></div>`;
+}
+
+function renderCard(card) {
+    const w = (card.word||'').replace(/'/g,"\\'");
+    return `<div class="flashcard-container fade-in">
+        <div class="flashcard">
+            <div class="flashcard-header">
+                <span class="flashcard-type">${card.type||'EXPRESSION'}</span>
+                <button class="flashcard-audio" onclick="playAudio('${w}')">
+                    <svg style="width:20px;height:20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="flashcard-meaning">"${card.meaning}"</div>
+            ${card.example?`<p style="font-size:13px;color:var(--text-muted);margin-bottom:20px;font-style:italic;">${card.example}</p>`:''}
+            <input type="text" id="fc-input" class="flashcard-input" placeholder="${state.t('typeWord')}..." onkeydown="checkFC(event,'${w}')">
+            <div id="mem-btns" class="memory-buttons">
+                <button class="memory-btn proficient" onclick="recordMem(3,'${w}')">${state.t('proficient')}</button>
+                <button class="memory-btn hesitant" onclick="recordMem(2,'${w}')">${state.t('hesitant')}</button>
+                <button class="memory-btn forgotten" onclick="recordMem(1,'${w}')">${state.t('forgotten')}</button>
+            </div>
+        </div>
+        <div class="text-center mt-20">
+            <button class="btn btn-secondary" onclick="backToHome()">${state.t('back')}</button>
+        </div>
+    </div>`;
+}
+
+function showLoading() {
+    const pc = document.getElementById('phase-content');
+    if (pc) pc.innerHTML = `<div class="text-center" style="padding:100px 0;">
+        <div class="spinner"></div>
+        <p style="margin-top:24px;color:var(--text-secondary);">${state.t('generating')}</p>
+    </div>`;
+}
+
+// ==================== ACTIONS ====================
+function setLanguage(lang) {
+    state.setLang(lang);
+    document.querySelectorAll('.lang-option').forEach(b => b.classList.toggle('active', b.dataset.lang===lang));
+    render();
+}
+
+function selectMode(m) { state.currentMode=m; state.currentPhase=0; render(); }
+function selectLevel(lv) { state.setLevel(lv); render(); }
+function backToHome() { state.currentMode=null; state.currentPhase=0; state.clearProgress(); render(); }
+function updateWC() {
+    const el=document.getElementById('article-input');
+    if(!el) return;
+    state.articleText=el.value;
+    const wc=el.value.trim().split(/\s+/).filter(w=>w).length;
+    const c=document.getElementById('wc');
+    if(c) c.textContent=`${wc} ${state.t('wordCount')}`;
+}
+
+async function startLearning() {
+    const el=document.getElementById('article-input');
+    state.articleText=el?.value.trim();
+    if(!state.articleText){showToast(state.t('noInput'));return;}
+    state.currentPhase=1; render(); showLoading();
+    try {
+        const p=getPrompts();
+        const raw=await callClaude(`请分析以下文章：\n\n${state.articleText}`, p.vocab, true);
+        const chunks=parseChunks(raw);
+        const md=raw.replace(/```json[\s\S]*?```/g,'').trim();
+        state.learningData.vocabulary=marked.parse(md);
+        state.learningData.vocabularyChunks=chunks;
+        state.saveProgress();
+
+        // 词块自动加入复习库 + 存Supabase
+        const added=state.addChunksToReview(chunks);
+        if(chunks.length>0) await sbInsert('vocabulary', chunks.map(c=>({
+            word:c.word, meaning:c.meaning, example:c.example||'', level:state.userLevel, created_at:new Date().toISOString()
+        })));
+
+        document.getElementById('phase-content').innerHTML=`
+            <div class="content-card">
+                <h2 class="section-title">${state.t('phase1')}</h2>
+                <div class="markdown-content">${state.learningData.vocabulary}</div>
+                ${added>0?`<div class="chunk-added-banner">✅ ${added} ${state.t('chunksAdded')}</div>`:''}
+                <div class="text-center mt-20">
+                    <button class="btn btn-primary" onclick="nextPhase()">${state.t('next')}</button>
                 </div>
-            `;
-        }
+            </div>`;
+    } catch(e) { showToast(state.t('error')+': '+e.message); state.currentPhase=0; render(); }
+}
 
-        function renderLevelSelection() {
-            const estimatedTime = state.calculateEstimatedTime(state.articleText);
-            
-            return `
-                <div class="fade-in">
-                    <div class="learning-content">
-                        ${!state.userLevel ? `
-                            <div class="content-card text-center">
-                                <h2 class="section-title">${state.t('selectLevel')}</h2>
-                                <div class="mode-grid" style="margin-top: 40px;">
-                                    ${['A1', 'A2', 'B1', 'B2', 'C1', 'C2'].map(level => `
-                                        <div class="mode-card" onclick="selectLevel('${level}')" style="padding: 32px;">
-                                            <div style="font-size: 36px; font-weight: 700; margin-bottom: 12px; font-family: 'Crimson Pro', serif;">${level}</div>
-                                            <div style="font-size: 13px; color: var(--text-secondary);">${state.t('levelDesc.' + level)}</div>
-                                        </div>
-                                    `).join('')}
-                                </div>
-                            </div>
-                        ` : `
-                            <div class="content-card">
-                                <div class="flex justify-between items-center mb-20">
-                                    <div class="flex items-center gap-12">
-                                        <span class="level-badge">${state.userLevel}</span>
-                                        <span class="time-estimate">
-                                            <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                            </svg>
-                                            ${state.t('estimatedTime')}: ${estimatedTime} ${state.t('minutes')}
-                                        </span>
-                                    </div>
-                                    <button class="btn btn-secondary" onclick="state.setLevel(null); render();">
-                                        ${state.t('back')}
-                                    </button>
-                                </div>
-                                
-                                <label class="input-label">${state.t('inputArticle')}</label>
-                                <textarea id="article-input" style="min-height: 300px;" oninput="updateWordCount()">${state.articleText}</textarea>
-                                
-                                <div class="flex justify-between items-center mt-20">
-                                    <span id="word-count" style="color: var(--text-secondary); font-size: 14px;">0 ${state.t('wordCount')}</span>
-                                    <div class="flex gap-12">
-                                        <button class="btn btn-secondary" onclick="backToModes()">${state.t('back')}</button>
-                                        <button class="btn btn-primary" onclick="startLearning()">${state.t('start')}</button>
-                                    </div>
-                                </div>
-                            </div>
-                        `}
-                    </div>
+async function nextPhase() {
+    if(state.currentPhase>=4) return;
+    state.currentPhase++; render();
+    if(state.currentPhase===2) await genCloze();
+    else if(state.currentPhase===4) showFlashcardEntry();
+}
+
+async function genCloze() {
+    showLoading();
+    try {
+        const p=getPrompts();
+        const chunkList=state.learningData.vocabularyChunks.map(c=>c.word).join('、');
+        const result=await callClaude(`文章：${state.articleText}\n\n已学词块：${chunkList}`, p.cloze);
+        state.learningData.cloze=result; state.saveProgress();
+        document.getElementById('phase-content').innerHTML=`
+            <div class="content-card">
+                <h2 class="section-title">${state.t('phase2')}</h2>
+                <div class="markdown-content">${result}</div>
+                <textarea id="ans" placeholder="${state.t('typeWord')}..." style="margin-top:24px;min-height:200px;"></textarea>
+                <div class="text-center mt-20">
+                    <button class="btn btn-primary" onclick="submitAns()">${state.t('submit')}</button>
                 </div>
-            `;
-        }
+            </div>`;
+    } catch(e) { showToast(state.t('error')+': '+e.message); }
+}
 
-        function renderLearningFlow() {
-            const phases = ['phase0', 'phase1', 'phase2', 'phase3', 'phase4'];
-            const emojis = ['📄', '📚', '✍️', '💬', '🎴'];
-            
-            return `
-                <div class="fade-in">
-                    <!-- 学习页面头部 -->
-                    <div class="learning-header">
-                        <div class="progress-nav">
-                            ${emojis.map((emoji, i) => `
-                                <div style="position: relative;">
-                                    <div class="progress-dot ${i === state.currentPhase ? 'active' : ''} ${i < state.currentPhase ? 'completed' : ''}">
-                                        ${i <= state.currentPhase ? `<div class="progress-emoji">${emoji}</div>` : ''}
-                                    </div>
-                                </div>
-                                ${i < emojis.length - 1 ? '<div class="progress-line"></div>' : ''}
-                            `).join('')}
-                        </div>
-                        
-                        <div class="flex items-center gap-12">
-                            <span class="level-badge">${state.userLevel}</span>
-                            <button class="btn btn-secondary" onclick="backToPhase0()">${state.t('back')}</button>
-                        </div>
-                    </div>
-                    
-                    <!-- 学习内容 -->
-                    <div class="learning-content">
-                        <div id="phase-content"></div>
-                    </div>
+async function submitAns() {
+    const ans=document.getElementById('ans')?.value||'';
+    state.currentPhase=3; render(); showLoading();
+    try {
+        const p=getPrompts();
+        const chunkList=state.learningData.vocabularyChunks.map(c=>c.word).join('、');
+        const result=await callClaude(
+            `原文：${state.articleText}\n\n已学词块：${chunkList}\n\n学生答案：${ans}`, p.feedback);
+        state.learningData.feedback=result; state.saveProgress();
+        document.getElementById('phase-content').innerHTML=`
+            <div class="content-card">
+                <h2 class="section-title">${state.t('phase3')}</h2>
+                <div class="markdown-content">${result}</div>
+                <div class="flex gap-12 mt-20" style="justify-content:center;flex-wrap:wrap;">
+                    <button class="btn btn-secondary" onclick="dlPdf()">${state.t('downloadPdf')} 📄</button>
+                    <button class="btn btn-secondary" onclick="saveRecord()">${state.t('saveRecord')} 💾</button>
+                    <button class="btn btn-primary" onclick="nextPhase()">${state.t('next')}</button>
                 </div>
-            `;
-        }
+            </div>`;
+    } catch(e) { showToast(state.t('error')+': '+e.message); }
+}
 
-        function renderReviewMode() {
-            const todayReviews = state.getTodayReviews();
-            
-            if (todayReviews.length === 0) {
-                return `
-                    <div class="fade-in text-center" style="padding: 100px 20px;">
-                        <div style="font-size: 64px; margin-bottom: 24px;">✅</div>
-                        <h2 style="font-size: 32px; font-weight: 700; margin-bottom: 16px;">${state.t('allDone')}</h2>
-                        <p style="color: var(--text-secondary); font-size: 16px; margin-bottom: 40px;">${state.t('noDueReviews')}</p>
-                        <button class="btn btn-secondary" onclick="backToModes()">${state.t('back')}</button>
-                    </div>
-                `;
-            }
-            
-            const card = todayReviews[0];
-            return renderFlashcard(card);
-        }
+function showFlashcardEntry() {
+    const n=state.learningData.vocabularyChunks.length;
+    document.getElementById('phase-content').innerHTML=`
+        <div class="content-card text-center">
+            <h2 class="section-title">${state.t('phase4')}</h2>
+            <p style="color:var(--text-secondary);margin-bottom:32px;">${n} ${state.t('words')} ${state.t('chunksAdded')}</p>
+            <div class="flex gap-12" style="justify-content:center;">
+                <button class="btn btn-secondary" onclick="backToHome()">${state.t('back')}</button>
+                <button class="btn btn-primary" onclick="goReview()">${state.t('startReview')}</button>
+            </div>
+        </div>`;
+}
 
-        function renderImportMode() {
-            return `
-                <div class="fade-in">
-                    <div class="learning-content">
-                        <div class="content-card">
-                            <h2 class="section-title">${state.t('importMode')}</h2>
-                            
-                            <p style="margin-bottom: 12px; color: var(--text-secondary);">
-                                <strong>${state.t('importFormat')}:</strong> ${state.t('importExample')}
-                            </p>
-                            <p style="font-family: monospace; color: var(--text-secondary); margin-bottom: 20px;">
-                                préconiser | 提倡<br>
-                                quantifier | 量化<br>
-                                équilibre | 平衡
-                            </p>
-                            
-                            <textarea id="import-input" placeholder="préconiser | 提倡&#10;quantifier | 量化" style="min-height: 300px;"></textarea>
-                            
-                            <div class="flex justify-between mt-20">
-                                <button class="btn btn-secondary" onclick="backToModes()">${state.t('back')}</button>
-                                <button class="btn btn-primary" onclick="importVocabulary()">${state.t('importBtn')}</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
+function goReview() { state.clearProgress(); state.currentMode='review'; render(); }
 
-        function renderFlashcard(card) {
-            return `
-                <div class="flashcard-container fade-in">
-                    <div class="flashcard">
-                        <div class="flashcard-header">
-                            <span class="flashcard-type">${card.type || 'VOCABULAIRE'}</span>
-                            <button class="flashcard-audio" onclick="playAudio('${card.word}')">
-                                <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
-                                </svg>
-                            </button>
-                        </div>
-                        
-                        <div class="flashcard-meaning">"${card.meaning}"</div>
-                        
-                        <input type="text" id="flashcard-input" class="flashcard-input" placeholder="${state.t('typeWord')}..." onkeydown="checkFlashcard(event, '${card.word}')">
-                        
-                        <div id="memory-buttons" class="memory-buttons">
-                            <button class="memory-btn proficient" onclick="recordMemory(3, '${card.word}')">${state.t('proficient')}</button>
-                            <button class="memory-btn hesitant" onclick="recordMemory(2, '${card.word}')">${state.t('hesitant')}</button>
-                            <button class="memory-btn forgotten" onclick="recordMemory(1, '${card.word}')">${state.t('forgotten')}</button>
-                        </div>
-                    </div>
-                    
-                    <div class="text-center mt-20">
-                        <button class="btn btn-secondary" onclick="backToModes()">${state.t('back')}</button>
-                    </div>
-                </div>
-            `;
-        }
+function checkFC(e, w) {
+    if(e.key!=='Enter') return;
+    const inp=e.target;
+    const ok=inp.value.trim().toLowerCase()===w.toLowerCase();
+    inp.style.borderColor=ok?'var(--accent-green)':'var(--accent-warm)';
+    inp.style.color=ok?'var(--accent-green)':'var(--accent-warm)';
+    if(ok){ document.getElementById('mem-btns').classList.add('show'); showToast(state.t('success')); }
+}
 
-        // ==================== 功能函数 ====================
-        function setLanguage(lang) {
-            state.setLanguage(lang);
-            
-            document.querySelectorAll('.lang-option').forEach(btn => {
-                btn.classList.remove('active');
-                if (btn.getAttribute('data-lang') === lang) {
-                    btn.classList.add('active');
-                }
-            });
-            
-            render();
-        }
-
-        function saveApiKey() {
-            const input = document.getElementById('api-key-input');
-            if (input && input.value.trim()) {
-                state.setApiKey(input.value.trim());
-                showToast(state.t('saved'));
-                render();
-            }
-        }
-
-        function selectMode(mode) {
-            state.currentMode = mode;
-            state.currentPhase = 0;
-            render();
-        }
-
-        function backToModes() {
-            state.currentMode = null;
-            state.currentPhase = 0;
-            state.clearProgress();
-            render();
-        }
-
-        function selectLevel(level) {
-            state.setLevel(level);
-            render();
-        }
-
-        function backToPhase0() {
-            state.currentPhase = 0;
-            render();
-        }
-
-        function updateWordCount() {
-            const input = document.getElementById('article-input');
-            if (input) {
-                state.articleText = input.value;
-                const count = input.value.trim().split(/\s+/).filter(w => w.length > 0).length;
-                const counter = document.getElementById('word-count');
-                if (counter) {
-                    counter.textContent = `${count} ${state.t('wordCount')}`;
-                }
-            }
-        }
-
-        async function startLearning() {
-            const input = document.getElementById('article-input');
-            state.articleText = input.value.trim();
-            
-            if (!state.articleText) {
-                showToast(state.t('noInput'));
-                return;
-            }
-            
-            state.currentPhase = 1;
-            render();
-            
-            // 显示加载
-            document.getElementById('phase-content').innerHTML = `
-                <div class="text-center" style="padding: 100px 0;">
-                    <div class="spinner"></div>
-                    <p style="margin-top: 24px; color: var(--text-secondary);">${state.t('generating')}</p>
-                </div>
-            `;
-            
-            try {
-                const prompts = getSystemPrompts();
-                const result = await callClaude(
-                    `请分析以下文章：\n\n${state.articleText}`,
-                    prompts.vocabulary
-                );
-                
-                state.learningData.vocabulary = result;
-                state.saveProgress();
-                
-                // 渲染结果
-                document.getElementById('phase-content').innerHTML = `
-                    <div class="content-card">
-                        <h2 class="section-title">${state.t('phase1')}</h2>
-                        <div class="markdown-content">
-                            ${result}
-                        </div>
-                        <div class="text-center mt-20">
-                            <button class="btn btn-primary" onclick="nextPhase()">${state.t('next')}</button>
-                        </div>
-                    </div>
-                `;
-            } catch (e) {
-                showToast(state.t('error'));
-                backToPhase0();
-            }
-        }
-
-        async function nextPhase() {
-            if (state.currentPhase < 4) {
-                state.currentPhase++;
-                render();
-                
-                // 根据当前阶段生成内容
-                if (state.currentPhase === 2) {
-                    await generateCloze();
-                } else if (state.currentPhase === 3) {
-                    // 等待用户提交答案后生成反馈
-                    showPhaseContent();
-                } else if (state.currentPhase === 4) {
-                    await generateFlashcards();
-                }
-            }
-        }
-
-        async function generateCloze() {
-            document.getElementById('phase-content').innerHTML = `
-                <div class="text-center" style="padding: 100px 0;">
-                    <div class="spinner"></div>
-                    <p style="margin-top: 24px; color: var(--text-secondary);">${state.t('generating')}</p>
-                </div>
-            `;
-            
-            try {
-                const prompts = getSystemPrompts();
-                const result = await callClaude(
-                    `基于文章创建练习：\n\n${state.articleText}`,
-                    prompts.cloze
-                );
-                
-                state.learningData.cloze = result;
-                state.saveProgress();
-                
-                document.getElementById('phase-content').innerHTML = `
-                    <div class="content-card">
-                        <h2 class="section-title">${state.t('phase2')}</h2>
-                        <div class="markdown-content">
-                            ${result}
-                        </div>
-                        <textarea id="answer-input" placeholder="${state.t('typeWord')}..." style="margin-top: 24px; min-height: 200px;"></textarea>
-                        <div class="text-center mt-20">
-                            <button class="btn btn-primary" onclick="submitAnswer()">${state.t('submit')}</button>
-                        </div>
-                    </div>
-                `;
-            } catch (e) {
-                showToast(state.t('error'));
-            }
-        }
-
-        async function submitAnswer() {
-            const answer = document.getElementById('answer-input')?.value || '';
-            
-            state.currentPhase = 3;
-            render();
-            
-            document.getElementById('phase-content').innerHTML = `
-                <div class="text-center" style="padding: 100px 0;">
-                    <div class="spinner"></div>
-                    <p style="margin-top: 24px; color: var(--text-secondary);">${state.t('generating')}</p>
-                </div>
-            `;
-            
-            try {
-                const prompts = getSystemPrompts();
-                const result = await callClaude(
-                    `请批改：\n\n原文：${state.articleText}\n\n学生答案：${answer}`,
-                    prompts.feedback
-                );
-                
-                state.learningData.feedback = result;
-                state.saveProgress();
-                
-                document.getElementById('phase-content').innerHTML = `
-                    <div class="content-card">
-                        <h2 class="section-title">${state.t('phase3')}</h2>
-                        <div class="markdown-content" id="feedback-content">
-                            ${result}
-                        </div>
-                        <div class="flex gap-12 mt-20" style="justify-content: center; flex-wrap: wrap;">
-                            <button class="btn btn-secondary" onclick="downloadPdf()">${state.t('downloadPdf')} 📄</button>
-                            <button class="btn btn-secondary" onclick="savePracticeRecord('${state.userLevel}')">${state.t('saveRecord')} 💾</button>
-                            <button class="btn btn-primary" onclick="nextPhase()">${state.t('next')}</button>
-                        </div>
-                    </div>
-                `;
-            } catch (e) {
-                showToast(state.t('error'));
-            }
-        }
-
-        async function generateFlashcards() {
-            // 简化：直接从词汇学习中提取
-            state.learningData.flashcards = [
-                { word: 'exemple', meaning: '例子', type: 'NOM' },
-                { word: 'comprendre', meaning: '理解', type: 'VERBE' }
-            ];
-            
-            document.getElementById('phase-content').innerHTML = `
-                <div class="text-center">
-                    <button class="btn btn-primary" onclick="startReviewFromLearning()">${state.t('startReview')}</button>
-                </div>
-            `;
-        }
-
-        function startReviewFromLearning() {
-            state.currentMode = 'review';
-            // 将学习的词汇加入复习计划
-            state.learningData.flashcards.forEach(card => {
-                state.reviewSchedule.push({
-                    word: card.word,
-                    meaning: card.meaning,
-                    type: card.type,
-                    reviewDate: new Date().toISOString().split('T')[0],
-                    level: 1,
-                    attempt: 0
-                });
-            });
-            state.saveReviewSchedule();
-            render();
-        }
-
-        function checkFlashcard(event, correctWord) {
-            if (event.key === 'Enter') {
-                const input = event.target;
-                const userInput = input.value.trim().toLowerCase();
-                const correct = correctWord.toLowerCase();
-                
-                if (userInput === correct) {
-                    input.style.borderColor = 'var(--accent-green)';
-                    input.style.color = 'var(--accent-green)';
-                    document.getElementById('memory-buttons').classList.add('show');
-                    showToast(state.t('success'));
-                } else {
-                    input.style.borderColor = 'var(--accent-warm)';
-                    input.style.color = 'var(--accent-warm)';
-                }
-            }
-        }
-
-        function recordMemory(level, word) {
-            const intervals = {
-                3: [1, 3, 7, 15, 30],
-                2: [1, 2, 4, 8, 16],
-                1: [0.5, 1, 2, 4, 8]
-            };
-            
-            const schedule = intervals[level];
-            const today = new Date();
-            
-            state.reviewSchedule = state.reviewSchedule.filter(r => r.word !== word);
-            
-            schedule.forEach((days, index) => {
-                const date = new Date(today);
-                date.setDate(date.getDate() + Math.ceil(days));
-                state.reviewSchedule.push({
-                    word,
-                    meaning: state.getTodayReviews()[0]?.meaning || '',
-                    reviewDate: date.toISOString().split('T')[0],
-                    level,
-                    attempt: index + 1
-                });
-            });
-            
-            state.saveReviewSchedule();
-            showToast(state.t('saved'));
-            
-            setTimeout(() => {
-                render();
-            }, 1000);
-        }
-
-        function playAudio(word) {
-            const utterance = new SpeechSynthesisUtterance(word);
-            utterance.lang = 'fr-FR';
-            utterance.rate = 0.8;
-
-            // 等待声音列表加载完毕后筛选最佳法语声音
-            function speakWithBestVoice() {
-                const voices = window.speechSynthesis.getVoices();
-                // 优先顺序：Google法语 > 任何fr-FR > 任何fr > 默认
-                const preferred = [
-                    voices.find(v => v.name.includes('Google') && v.lang.startsWith('fr')),
-                    voices.find(v => v.lang === 'fr-FR'),
-                    voices.find(v => v.lang.startsWith('fr')),
-                ].find(Boolean);
-                if (preferred) utterance.voice = preferred;
-                window.speechSynthesis.cancel();
-                window.speechSynthesis.speak(utterance);
-            }
-
-            if (window.speechSynthesis.getVoices().length > 0) {
-                speakWithBestVoice();
-            } else {
-                window.speechSynthesis.onvoiceschanged = speakWithBestVoice;
-            }
-        }
-
-        // ==================== PDF 下载 ====================
-        function downloadPdf() {
-            showToast(state.t('pdfGenerating'));
-
-            const date = new Date().toLocaleDateString('fr-FR');
-            const level = state.userLevel || '';
-
-            // 构建PDF内容
-            const pdfContainer = document.createElement('div');
-            pdfContainer.style.cssText = 'padding: 40px; font-family: serif; color: #2C2C2B; max-width: 800px;';
-            pdfContainer.innerHTML = `
-                <div style="text-align:center; margin-bottom: 32px; border-bottom: 2px solid #5E6D62; padding-bottom: 20px;">
-                    <h1 style="font-size: 28px; font-weight: 700; margin-bottom: 8px;">DALF Rédacteur Pro</h1>
-                    <p style="color: #6B6B68;">Niveau ${level} · ${date}</p>
-                </div>
-                ${state.learningData.vocabulary ? `<h2 style="color:#5E6D62; margin: 24px 0 12px;">📚 Vocabulaire</h2><div>${state.learningData.vocabulary}</div><hr style="margin:24px 0;">` : ''}
-                ${state.learningData.cloze ? `<h2 style="color:#5E6D62; margin: 24px 0 12px;">✍️ Exercices</h2><div>${state.learningData.cloze}</div><hr style="margin:24px 0;">` : ''}
-                ${state.learningData.feedback ? `<h2 style="color:#5E6D62; margin: 24px 0 12px;">✅ Corrections</h2><div>${state.learningData.feedback}</div>` : ''}
-            `;
-            document.body.appendChild(pdfContainer);
-
-            const opt = {
-                margin: [10, 10, 10, 10],
-                filename: `DALF_${level}_${date.replace(/\//g, '-')}.pdf`,
-                image: { type: 'jpeg', quality: 0.95 },
-                html2canvas: { scale: 2, useCORS: true },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-
-            html2pdf().set(opt).from(pdfContainer).save().then(() => {
-                document.body.removeChild(pdfContainer);
-            });
-        }
-
-        // ==================== 练习记录存档 ====================
-        async function savePracticeRecord(level) {
-            const sessionData = {
-                date: new Date().toISOString(),
-                level: level,
-                article_excerpt: state.articleText.substring(0, 200),
-                vocabulary_count: (state.learningData.vocabulary.match(/###/g) || []).length,
-                has_feedback: !!state.learningData.feedback,
-                lang: state.currentLang
-            };
-
-            // 1. 本地存档（始终可用）
-            const history = JSON.parse(localStorage.getItem('practice_history') || '[]');
-            history.unshift(sessionData);
-            localStorage.setItem('practice_history', JSON.stringify(history.slice(0, 50))); // 保留最近50条
-
-            // 2. Supabase云端存档（若已配置）
-            await saveSessionToSupabase(sessionData);
-
-            showToast(state.t('recordSaved'));
-        }
-
-        function importVocabulary() {
-            const input = document.getElementById('import-input');
-            const lines = input.value.trim().split('\n');
-            
-            let count = 0;
-            lines.forEach(line => {
-                const [word, meaning] = line.split('|').map(s => s.trim());
-                if (word && meaning) {
-                    state.reviewSchedule.push({
-                        word,
-                        meaning,
-                        reviewDate: new Date().toISOString().split('T')[0],
-                        level: 1,
-                        attempt: 0,
-                        type: 'IMPORTED'
-                    });
-                    count++;
-                }
-            });
-            
-            state.saveReviewSchedule();
-            showToast(`${state.t('success')}: ${count} ${state.t('words')}`);
-            
-            setTimeout(() => {
-                state.currentMode = 'review';
-                render();
-            }, 1000);
-        }
-
-        function showPhaseContent() {
-            // 占位函数
-        }
-
-        function showToast(message) {
-            const toast = document.createElement('div');
-            toast.className = 'toast';
-            toast.textContent = message;
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
-        }
-
-        // ==================== 初始化 ====================
-        marked.setOptions({
-            breaks: true,
-            gfm: true
+function recordMem(lvl, word) {
+    const iv={3:[1,3,7,15,30], 2:[1,2,4,8,16], 1:[0.5,1,2,4,8]};
+    const card=state.reviewSchedule.find(r=>r.word===word);
+    state.reviewSchedule=state.reviewSchedule.filter(r=>r.word!==word);
+    iv[lvl].forEach((d,i)=>{
+        const dt=new Date(); dt.setDate(dt.getDate()+Math.ceil(d));
+        state.reviewSchedule.push({
+            word, meaning:card?.meaning||'', example:card?.example||'',
+            type:card?.type||'EXPRESSION', reviewDate:dt.toISOString().split('T')[0], level:lvl, attempt:i+1
         });
+    });
+    state.saveReviewSchedule();
+    showToast(state.t('saved'));
+    setTimeout(()=>render(), 1000);
+}
 
-        window.addEventListener('DOMContentLoaded', () => {
-            // 检查是否有未完成的学习session
-            const saved = state.loadProgress();
-            if (saved && saved.currentPhase > 0 && saved.articleText) {
-                const minutesAgo = Math.round((Date.now() - new Date(saved.savedAt)) / 60000);
-                const timeLabel = minutesAgo < 60
-                    ? `${minutesAgo}分钟前`
-                    : `${Math.round(minutesAgo / 60)}小时前`;
+function playAudio(word) {
+    const u=new SpeechSynthesisUtterance(word);
+    u.lang='fr-FR'; u.rate=0.8;
+    function speak() {
+        const vs=window.speechSynthesis.getVoices();
+        const v=[vs.find(v=>v.name.includes('Google')&&v.lang.startsWith('fr')),vs.find(v=>v.lang==='fr-FR'),vs.find(v=>v.lang.startsWith('fr'))].find(Boolean);
+        if(v) u.voice=v;
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(u);
+    }
+    window.speechSynthesis.getVoices().length>0 ? speak() : (window.speechSynthesis.onvoiceschanged=speak);
+}
 
-                const resume = confirm(`发现未完成的学习（${timeLabel}保存，等级 ${saved.userLevel}）\n\n是否继续上次的学习？\n\n点击"取消"开始新的学习`);
-                if (resume) {
-                    state.restoreProgress(saved);
-                    render();
-                    // 恢复对应阶段的内容显示
-                    setTimeout(() => restorePhaseContent(saved.currentPhase, saved.learningData), 100);
-                } else {
-                    state.clearProgress();
-                    render();
-                }
-            } else {
-                render();
-            }
-            setTimeout(updateWordCount, 100);
-        });
+function dlPdf() {
+    showToast(state.t('pdfGenerating'));
+    const date=new Date().toLocaleDateString('fr-FR');
+    const lv=state.userLevel||'';
+    const div=document.createElement('div');
+    div.style.cssText='padding:40px;font-family:serif;color:#2C2C2B;max-width:800px;';
+    div.innerHTML=`
+        <div style="text-align:center;margin-bottom:32px;border-bottom:2px solid #5E6D62;padding-bottom:20px;">
+            <h1 style="font-size:28px;font-weight:700;margin-bottom:8px;">DALF Rédacteur Pro</h1>
+            <p style="color:#6B6B68;">Niveau ${lv} · ${date}</p>
+        </div>
+        ${state.learningData.vocabulary?`<h2 style="color:#5E6D62;margin:24px 0 12px;">📚 Expressions</h2><div>${state.learningData.vocabulary}</div><hr style="margin:24px 0;">`:''}
+        ${state.learningData.cloze?`<h2 style="color:#5E6D62;margin:24px 0 12px;">✍️ Exercices</h2><div>${state.learningData.cloze}</div><hr style="margin:24px 0;">`:''}
+        ${state.learningData.feedback?`<h2 style="color:#5E6D62;margin:24px 0 12px;">✅ Corrections</h2><div>${state.learningData.feedback}</div>`:''}`;
+    document.body.appendChild(div);
+    html2pdf().set({
+        margin:[10,10,10,10], filename:`DALF_${lv}_${date.replace(/\//g,'-')}.pdf`,
+        image:{type:'jpeg',quality:0.95}, html2canvas:{scale:2,useCORS:true},
+        jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}
+    }).from(div).save().then(()=>document.body.removeChild(div));
+}
 
-        function restorePhaseContent(phase, learningData) {
-            const container = document.getElementById('phase-content');
-            if (!container) return;
+async function saveRecord() {
+    const d={
+        date:new Date().toISOString(), level:state.userLevel,
+        article_excerpt:state.articleText.substring(0,200),
+        vocabulary_count:state.learningData.vocabularyChunks.length,
+        has_feedback:!!state.learningData.feedback, lang:state.lang
+    };
+    const h=JSON.parse(localStorage.getItem('practice_history')||'[]');
+    h.unshift(d);
+    localStorage.setItem('practice_history', JSON.stringify(h.slice(0,50)));
+    await sbInsert('practice_sessions',[d]);
+    showToast(state.t('recordSaved'));
+}
 
-            if (phase === 1 && learningData.vocabulary) {
-                container.innerHTML = `
-                    <div class="content-card">
-                        <h2 class="section-title">${state.t('phase1')}</h2>
-                        <div class="markdown-content">${learningData.vocabulary}</div>
-                        <div class="text-center mt-20">
-                            <button class="btn btn-primary" onclick="nextPhase()">${state.t('next')}</button>
-                        </div>
-                    </div>`;
-            } else if (phase === 2 && learningData.cloze) {
-                container.innerHTML = `
-                    <div class="content-card">
-                        <h2 class="section-title">${state.t('phase2')}</h2>
-                        <div class="markdown-content">${learningData.cloze}</div>
-                        <textarea id="answer-input" placeholder="${state.t('typeWord')}..." style="margin-top: 24px; min-height: 200px;"></textarea>
-                        <div class="text-center mt-20">
-                            <button class="btn btn-primary" onclick="submitAnswer()">${state.t('submit')}</button>
-                        </div>
-                    </div>`;
-            } else if (phase === 3 && learningData.feedback) {
-                container.innerHTML = `
-                    <div class="content-card">
-                        <h2 class="section-title">${state.t('phase3')}</h2>
-                        <div class="markdown-content" id="feedback-content">${learningData.feedback}</div>
-                        <div class="flex gap-12 mt-20" style="justify-content: center; flex-wrap: wrap;">
-                            <button class="btn btn-secondary" onclick="downloadPdf()">${state.t('downloadPdf')} 📄</button>
-                            <button class="btn btn-secondary" onclick="savePracticeRecord('${state.userLevel}')">${state.t('saveRecord')} 💾</button>
-                            <button class="btn btn-primary" onclick="nextPhase()">${state.t('next')}</button>
-                        </div>
-                    </div>`;
-            }
-        }
-        window.restorePhaseContent = restorePhaseContent;
+function doImport() {
+    const inp=document.getElementById('import-input');
+    const chunks=inp.value.trim().split('\n').map(l=>{
+        const [word,meaning]=l.split('|').map(s=>s.trim());
+        return word&&meaning?{word,meaning,type:'IMPORTED'}:null;
+    }).filter(Boolean);
+    const added=state.addChunksToReview(chunks);
+    showToast(`${state.t('success')}: ${added} ${state.t('words')}`);
+    setTimeout(()=>{state.currentMode='review';render();},1000);
+}
 
-        // 导出函数
-        window.setLanguage = setLanguage;
-        window.saveApiKey = saveApiKey;
-        window.selectMode = selectMode;
-        window.backToModes = backToModes;
-        window.selectLevel = selectLevel;
-        window.backToPhase0 = backToPhase0;
-        window.updateWordCount = updateWordCount;
-        window.startLearning = startLearning;
-        window.nextPhase = nextPhase;
-        window.submitAnswer = submitAnswer;
-        window.startReviewFromLearning = startReviewFromLearning;
-        window.checkFlashcard = checkFlashcard;
-        window.recordMemory = recordMemory;
-        window.playAudio = playAudio;
-        window.importVocabulary = importVocabulary;
-        window.downloadPdf = downloadPdf;
-        window.savePracticeRecord = savePracticeRecord;
-    </script>
+function showToast(msg) {
+    const t=document.createElement('div');
+    t.className='toast'; t.textContent=msg;
+    document.body.appendChild(t);
+    setTimeout(()=>t.remove(),3000);
+}
+
+function restorePhase(phase, ld) {
+    const pc=document.getElementById('phase-content');
+    if(!pc) return;
+    if(phase===1&&ld.vocabulary) {
+        pc.innerHTML=`<div class="content-card">
+            <h2 class="section-title">${state.t('phase1')}</h2>
+            <div class="markdown-content">${ld.vocabulary}</div>
+            <div class="text-center mt-20"><button class="btn btn-primary" onclick="nextPhase()">${state.t('next')}</button></div>
+        </div>`;
+    } else if(phase===2&&ld.cloze) {
+        pc.innerHTML=`<div class="content-card">
+            <h2 class="section-title">${state.t('phase2')}</h2>
+            <div class="markdown-content">${ld.cloze}</div>
+            <textarea id="ans" placeholder="${state.t('typeWord')}..." style="margin-top:24px;min-height:200px;"></textarea>
+            <div class="text-center mt-20"><button class="btn btn-primary" onclick="submitAns()">${state.t('submit')}</button></div>
+        </div>`;
+    } else if(phase===3&&ld.feedback) {
+        pc.innerHTML=`<div class="content-card">
+            <h2 class="section-title">${state.t('phase3')}</h2>
+            <div class="markdown-content">${ld.feedback}</div>
+            <div class="flex gap-12 mt-20" style="justify-content:center;flex-wrap:wrap;">
+                <button class="btn btn-secondary" onclick="dlPdf()">${state.t('downloadPdf')} 📄</button>
+                <button class="btn btn-secondary" onclick="saveRecord()">${state.t('saveRecord')} 💾</button>
+                <button class="btn btn-primary" onclick="nextPhase()">${state.t('next')}</button>
+            </div>
+        </div>`;
+    }
+}
+
+// ==================== INIT ====================
+marked.setOptions({breaks:true, gfm:true});
+
+window.addEventListener('DOMContentLoaded', ()=>{
+    const saved=state.loadProgress();
+    if(saved&&saved.currentPhase>0&&saved.articleText) {
+        const mins=Math.round((Date.now()-new Date(saved.savedAt))/60000);
+        const label=mins<60?`${mins}分钟前`:`${Math.round(mins/60)}小时前`;
+        const resume=confirm(`${state.t('resumeTitle')}（${label}，等级 ${saved.userLevel}）\n\n是否继续？点击"取消"重新开始`);
+        if(resume){ state.restoreProgress(saved); render(); setTimeout(()=>restorePhase(saved.currentPhase,saved.learningData),100); }
+        else { state.clearProgress(); render(); }
+    } else { render(); }
+    setTimeout(()=>{ const el=document.getElementById('article-input'); if(el){const e=new Event('input');el.dispatchEvent(e);} },100);
+});
+
+// 全局导出
+Object.assign(window,{
+    setLanguage, selectMode, selectLevel, backToHome, updateWC,
+    startLearning, nextPhase, submitAns, genCloze,
+    checkFC, recordMem, playAudio, dlPdf, saveRecord, doImport,
+    goReview, restorePhase, showFlashcardEntry,
+    // 兼容旧名
+    updateWordCount: updateWC,
+    submitAnswer: submitAns,
+    downloadPdf: dlPdf,
+    savePracticeRecord: saveRecord,
+    importVocabulary: doImport,
+});
+</script>
 </body>
 </html>
