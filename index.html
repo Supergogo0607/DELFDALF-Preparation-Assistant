@@ -118,6 +118,7 @@
 // ==================== 配置 ====================
 const CONFIG = {
     WORKER_URL: 'https://delfdalfassistant.yifan6760.workers.dev',
+    INVITE_CODE: 'DELFDALF2026',  
     SUPABASE_URL: '',       // 填入你的Supabase URL
     SUPABASE_ANON_KEY: '',  // 填入你的Supabase anon key
 };
@@ -452,6 +453,12 @@ function parseChunks(rawText) {
 // ==================== RENDER ====================
 function render() {
     const app = document.getElementById('app');
+    // 邀请码验证
+    const entered = localStorage.getItem('invite_code');
+    if (entered !== CONFIG.INVITE_CODE) {
+        app.innerHTML = renderInviteGate();
+        return;
+    }
     if (!CONFIG.WORKER_URL) { app.innerHTML = renderNoWorker(); return; }
     if (!state.currentMode) { app.innerHTML = renderHome(); return; }
     if (state.currentMode === 'learning') {
@@ -468,6 +475,25 @@ function renderNoWorker() {
         <p style="color:var(--text-secondary);">Worker URL not configured. Please set CONFIG.WORKER_URL.</p>
     </div>`;
 }
+function renderInviteGate() {
+    return `<div class="content-card" style="max-width:400px;margin:100px auto;text-align:center;">
+        <div style="font-size:48px;margin-bottom:24px;">🔐</div>
+        <h2 style="font-family:'Crimson Pro',serif;margin-bottom:16px;">内测访问码</h2>
+        <input type="text" id="invite-input" placeholder="请输入邀请码" style="text-align:center;margin-bottom:16px;">
+        <button class="btn btn-primary" style="width:100%;" onclick="submitInviteCode()">进入</button>
+    </div>`;
+}
+
+function submitInviteCode() {
+    const val = document.getElementById('invite-input')?.value.trim();
+    if (val === CONFIG.INVITE_CODE) {
+        localStorage.setItem('invite_code', val);
+        render();
+    } else {
+        showToast('邀请码错误');
+    }
+}
+window.submitInviteCode = submitInviteCode;
 
 function renderHome() {
     const due = state.getTodayReviews().length;
