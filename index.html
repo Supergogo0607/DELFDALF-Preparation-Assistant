@@ -93,6 +93,42 @@
         .justify-center { justify-content: center; }
         .justify-between { justify-content: space-between; }
         .gap-12 { gap: 12px; }
+
+        /* ===== 填空交互样式 ===== */
+        .cloze-exercise { margin: 20px 0; }
+        .cloze-question { margin: 16px 0; padding: 16px 20px; background: white; border: 1px solid var(--border-soft); border-radius: 12px; line-height: 2.2; font-size: 16px; }
+        .cloze-input { display: inline-block; border: none; border-bottom: 2px solid var(--accent-gold); background: transparent; font-family: 'Crimson Pro', serif; font-size: 16px; color: var(--text-primary); padding: 0 4px; min-width: 80px; text-align: center; outline: none; transition: border-color 0.2s; }
+        .cloze-input:focus { border-bottom-color: var(--accent-green); }
+        .cloze-input.correct { border-bottom-color: #10B981; color: #10B981; font-weight: 600; }
+        .cloze-input.wrong { border-bottom-color: var(--accent-warm); color: var(--accent-warm); }
+        .cloze-input.revealed { border-bottom-color: #6366f1; color: #6366f1; font-style: italic; }
+        .cloze-hint { font-size: 12px; color: var(--text-muted); margin-left: 8px; }
+        .cloze-attempts { font-size: 11px; color: var(--text-muted); display: inline-block; margin-left: 4px; }
+        .exercise-section { margin: 32px 0; }
+        .exercise-section-title { font-size: 18px; font-weight: 700; color: var(--text-primary); margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border-soft); }
+        .score-banner { padding: 16px 20px; border-radius: 12px; margin: 20px 0; font-weight: 600; text-align: center; }
+        .score-banner.good { background: rgba(16,185,129,0.1); color: #10B981; border: 1px solid rgba(16,185,129,0.3); }
+        .score-banner.ok { background: rgba(245,158,11,0.1); color: #F59E0B; border: 1px solid rgba(245,158,11,0.3); }
+        .score-banner.poor { background: rgba(166,123,123,0.1); color: var(--accent-warm); border: 1px solid rgba(166,123,123,0.3); }
+
+        /* ===== 写作引导样式 ===== */
+        .writing-guide { margin: 16px 0; border: 1px solid var(--accent-gold); border-radius: 12px; overflow: hidden; }
+        .writing-guide-header { padding: 12px 16px; background: rgba(201,169,97,0.1); cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 14px; font-weight: 600; color: var(--accent-gold); user-select: none; }
+        .writing-guide-header:hover { background: rgba(201,169,97,0.15); }
+        .writing-guide-body { padding: 16px 20px; background: rgba(201,169,97,0.04); display: none; font-size: 14px; line-height: 1.8; color: var(--text-secondary); white-space: pre-wrap; }
+        .writing-guide-body.open { display: block; }
+        .writing-guide-arrow { transition: transform 0.2s; }
+        .writing-guide-arrow.open { transform: rotate(180deg); }
+
+        /* ===== 精批报告样式 ===== */
+        .report-card { margin-top: 24px; border: 1px solid var(--border-soft); border-radius: 12px; overflow: hidden; }
+        .report-item { padding: 14px 18px; border-bottom: 1px solid var(--border-soft); display: flex; gap: 12px; align-items: flex-start; }
+        .report-item:last-child { border-bottom: none; }
+        .report-icon { font-size: 18px; flex-shrink: 0; margin-top: 2px; }
+        .report-content { flex: 1; }
+        .report-word { font-weight: 700; font-family: 'Crimson Pro', serif; font-size: 16px; }
+        .report-reason { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+
         @media (max-width: 768px) {
             .mode-grid { grid-template-columns: 1fr; }
             .learning-header { flex-direction: column; gap: 16px; padding: 16px; }
@@ -120,8 +156,8 @@ const CONFIG = {
     WORKER_URL: 'https://delfdalfassistant.yifan6760.workers.dev',
     INVITE_CODE: 'DELFDALF2026',
     MAX_USES: 5,
-    SUPABASE_URL: '',       // 填入你的Supabase URL
-    SUPABASE_ANON_KEY: '',  // 填入你的Supabase anon key
+    SUPABASE_URL: '',
+    SUPABASE_ANON_KEY: '',
 };
 
 // ==================== 翻译 ====================
@@ -139,10 +175,19 @@ const T = {
         todayReview:'今日待复习', words:'个词块', startReview:'开始复习',
         proficient:'熟练', hesitant:'犹豫', forgotten:'忘记', typeWord:'请输入这个词块',
         importFormat:'格式', importExample:'例如', importBtn:'导入',
-        generating:'正在分析文章，提取词块...', success:'成功', error:'错误', saved:'已保存',
+        generating:'正在分析文章，提取词块...', generatingExercise:'正在生成练习题...', generatingReport:'正在生成精批报告...',
+        success:'成功', error:'错误', saved:'已保存',
         noInput:'请输入文章内容', noDueReviews:'暂无待复习内容', allDone:'今日复习已完成',
         downloadPdf:'下载PDF', saveRecord:'保存记录', recordSaved:'记录已保存', pdfGenerating:'生成PDF...',
         chunksAdded:'个词块已自动加入复习库', resumeTitle:'发现未完成的学习',
+        checkAnswers:'查看精批报告', writingGuideBtn:'💡 没有思路？点击展开引导',
+        writingGuideClose:'收起引导',
+        scoreGood:'答对 {n} 题，很棒！继续写作部分 👇',
+        scoreOk:'答对 {n} 题，继续加油！写作部分可以用这些词块 👇',
+        scorePoor:'答对 {n} 题，没关系！看看精批分析再试一次 👇',
+        reportTitle:'📊 填空精批报告',
+        correct:'答对', wrong:'答错', revealed:'已显示',
+        submitWriting:'提交写作',
     },
     en: {
         appTitle:'DELF Learning Assistant', selectMode:'Select Mode',
@@ -157,10 +202,19 @@ const T = {
         todayReview:'Due Today', words:'chunks', startReview:'Start Review',
         proficient:'Proficient', hesitant:'Hesitant', forgotten:'Forgotten', typeWord:'Type the chunk',
         importFormat:'Format', importExample:'Example', importBtn:'Import',
-        generating:'Analysing article, extracting chunks...', success:'Success', error:'Error', saved:'Saved',
+        generating:'Analysing article...', generatingExercise:'Generating exercises...', generatingReport:'Generating report...',
+        success:'Success', error:'Error', saved:'Saved',
         noInput:'Please input text', noDueReviews:'No reviews due', allDone:'All done for today',
         downloadPdf:'Download PDF', saveRecord:'Save Record', recordSaved:'Record saved', pdfGenerating:'Generating PDF...',
         chunksAdded:'chunks added to review', resumeTitle:'Unfinished session found',
+        checkAnswers:'View Detailed Report', writingGuideBtn:'💡 Need help? Click for guidance',
+        writingGuideClose:'Hide guidance',
+        scoreGood:'{n} correct, excellent! Continue to writing 👇',
+        scoreOk:'{n} correct, keep going! Use these chunks in your writing 👇',
+        scorePoor:'{n} correct, no worries! Check the report below 👇',
+        reportTitle:'📊 Fill-in-the-blank Report',
+        correct:'Correct', wrong:'Wrong', revealed:'Shown',
+        submitWriting:'Submit Writing',
     },
     fr: {
         appTitle:'DELF DALF Assistant', selectMode:'Choisissez le mode',
@@ -175,10 +229,19 @@ const T = {
         todayReview:'À réviser', words:'expressions', startReview:'Commencer',
         proficient:'Maîtrisé', hesitant:'Hésitant', forgotten:'Oublié', typeWord:'Saisissez l\'expression',
         importFormat:'Format', importExample:'Exemple', importBtn:'Importer',
-        generating:'Analyse de l\'article...', success:'Succès', error:'Erreur', saved:'Sauvegardé',
+        generating:'Analyse de l\'article...', generatingExercise:'Génération des exercices...', generatingReport:'Génération du rapport...',
+        success:'Succès', error:'Erreur', saved:'Sauvegardé',
         noInput:'Veuillez saisir le texte', noDueReviews:'Aucune révision due', allDone:'Révisions terminées',
         downloadPdf:'Télécharger PDF', saveRecord:'Sauvegarder', recordSaved:'Sauvegardé', pdfGenerating:'Génération PDF...',
         chunksAdded:'expressions ajoutées', resumeTitle:'Session non terminée',
+        checkAnswers:'Voir le rapport détaillé', writingGuideBtn:'💡 Besoin d\'aide ? Cliquez pour les conseils',
+        writingGuideClose:'Masquer les conseils',
+        scoreGood:'{n} correctes, excellent ! Passez à la rédaction 👇',
+        scoreOk:'{n} correctes, continuez ! Utilisez ces expressions dans votre texte 👇',
+        scorePoor:'{n} correctes, pas de panique ! Consultez le rapport ci-dessous 👇',
+        reportTitle:'📊 Rapport de complétion',
+        correct:'Correct', wrong:'Incorrect', revealed:'Affiché',
+        submitWriting:'Soumettre la rédaction',
     }
 };
 
@@ -190,7 +253,7 @@ class AppState {
         this.currentPhase = 0;
         this.userLevel = localStorage.getItem('user_level') || null;
         this.articleText = '';
-        this.learningData = { vocabulary: '', vocabularyChunks: [], cloze: '', feedback: '' };
+        this.learningData = { vocabulary: '', vocabularyChunks: [], cloze: '', clozeData: null, feedback: '' };
         this.reviewSchedule = [];
         this._loadReviewSchedule();
     }
@@ -244,7 +307,6 @@ class AppState {
         return Math.max(8, Math.min(60, Math.ceil((wc/100) * (rates[this.userLevel]||5)) + 13));
     }
 
-    // 词块加入复习库（去重）
     addChunksToReview(chunks) {
         const today = new Date().toISOString().split('T')[0];
         let added = 0;
@@ -270,7 +332,6 @@ function initSB() {
     if (CONFIG.SUPABASE_URL && CONFIG.SUPABASE_ANON_KEY && !sb)
         sb = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
 }
-
 async function sbInsert(table, rows) {
     initSB();
     if (!sb) return;
@@ -284,7 +345,7 @@ async function callClaude(userMsg, sysPrompt, raw=false) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
             model: 'claude-sonnet-4-20250514',
-            max_tokens: 4000,
+            max_tokens: 3000,
             system: sysPrompt,
             messages: [{ role: 'user', content: userMsg }]
         })
@@ -302,42 +363,48 @@ const LEVEL_CFG = {
         chunkType: '单个高频词或最简单固定搭配（如 il y a, c\'est, avoir + nom）',
         chunkRule: '词块必须是原形框架：✅ "se lever" ❌ "se lève"；✅ "prendre le bus" ❌ "prend le bus"',
         exercise: '写作20-30字，只用现在时，句子极短',
-        feedback: '以鼓励为主，只指出1-2个关键错误，语气温和'
+        feedback: '以鼓励为主，只指出1-2个关键错误，语气温和',
+        writingGuide: `先想想这个场景——\n\n你今天做了什么？去了哪里？和谁在一起？\n不用想复杂的，就像发朋友圈一样说出来👇\n\n开头：说你做了什么、在哪里\n→ J'ai + [动词] + à/au + [地点]\n\n中间：说和谁一起、什么感觉\n→ avec + [人] / C'était + [形容词]\n\n结尾：你喜欢吗？\n→ J'aime / Je n'aime pas + [这件事]`
     },
     A2: {
         vocab: '提取日常交流实用词汇（CECR A2），包含动词短语和固定搭配',
         chunkType: '动词框架和日常搭配（如 avoir besoin de + inf., être en train de + inf.）',
-        chunkRule: '词块必须是动词原形框架，不能截取变位片段。✅ "durer + durée" ✅ "prendre + durée + pour + inf." ❌ "dure environ"（变位片段，不可迁移）',
+        chunkRule: '词块必须是动词原形框架，不能截取变位片段。✅ "durer + durée" ❌ "dure environ"',
         exercise: '写作30-50字，可用过去时和将来时',
-        feedback: '鼓励为主，指出2-3个错误，重点解释语法规则'
+        feedback: '鼓励为主，指出2-3个错误，重点解释语法规则',
+        writingGuide: `先停下来想想你自己的经历——\n\n题目说的这件事，你有没有类似的体验？\n想一个具体的场景，哪怕很小、很日常都可以。\n\n第一句：发生了什么？什么时候？\n→ Un jour / La semaine dernière + [动词过去时]\n\n第二句：你感觉怎么样？\n→ J'ai trouvé ça + [形容词] / C'était vraiment + [形容词]\n\n第三句：你以后会怎么做？\n→ La prochaine fois, je vais + [动词原形]\n\n💡 试着用上今天学的词块！`
     },
     B1: {
         vocab: '提取中级表达词汇（CECR B1），包含常用词块和搭配',
         chunkType: '实用句式框架（如 il est important de + inf., en ce qui concerne + nom）',
-        chunkRule: '词块必须是可迁移的句式框架，用占位符（+ inf. / + nom）标注可替换部分。词块必须是词块原形框架，不能截取变位、性数变化片段。',
+        chunkRule: '词块必须是可迁移的句式框架，用占位符（+ inf. / + nom）标注可替换部分',
         exercise: '写作50-80字，要求逻辑连贯',
-        feedback: '平衡鼓励和纠错，指出3-4个问题，要求改写错误句子'
+        feedback: '平衡鼓励和纠错，指出3-4个问题，要求改写错误句子',
+        writingGuide: `先停下来想想你自己——\n\n题目里说的这个现象，你身边有没有？\n你自己有没有类似的经历或者感受？\n\n然后一步一步想：\n\n① 这个现象是什么？（描述现象）\n② 为什么会这样？（找原因，至少想两个）\n③ 这样下去会怎样？（说后果）\n④ 你怎么看？（表达立场）\n\n别急着写，先在脑子里把这四步想清楚。\n想清楚了，写起来就顺了。\n\n💡 记得用上今天学的词块，写完检查一遍！`
     },
     B2: {
         vocab: '提取高频学术/论述词汇（CECR B2），重点词块和搭配',
         chunkType: '论述框架（如 par conséquent, il convient de + inf., dans la mesure où + prop.）',
-        chunkRule: '词块必须是论述写作中可直接套用的表达框架，标注句法结构。词块必须是词块原形框架，不能截取变位、性数变化片段。',
+        chunkRule: '词块必须是论述写作中可直接套用的表达框架，标注句法结构',
         exercise: '写作80-120字，要求有论点和论据',
-        feedback: '严格指出所有错误，要求文体一致性'
+        feedback: '严格指出所有错误，要求文体一致性',
+        writingGuide: `【先读，再动笔】\n\n第一步：确定你的立场\n→ 你支持哪一方？为什么？\n→ 对立的一方有什么道理？你怎么反驳？\n\n第二步：找两个有力的论据\n→ 每个论据要能回答：为什么？\n→ 最好能举一个具体例子\n\n第三步：论证结构\nThèse：你的核心观点\nArgument 1 + exemple\nArgument 2 + exemple\nNuance：承认对立方的合理性\nConclusion：坚持你的立场\n\n💡 今天学的词块在论证时可以直接套用！`
     },
     C1: {
         vocab: '提取高级表达和复杂结构（CECR C1），重点论述语块',
         chunkType: '高级论述语块（如 force est de constater que, il n\'en demeure pas moins que）',
-        chunkRule: '词块必须体现C1级别语言精确性，标注使用语境（正式/书面）。词块必须是词块原形框架，不能截取变位、性数变化片段。',
+        chunkRule: '词块必须体现C1级别语言精确性，标注使用语境（正式/书面）',
         exercise: '写作120-180字，要求论证严密有层次',
-        feedback: '按DALF C1标准严格批改，重点评估论点发展和语言精确性'
+        feedback: '按DALF C1标准严格批改，重点评估论点发展和语言精确性',
+        writingGuide: `【构建你的论证体系】\n\n在动笔前，先想清楚这三个问题：\n\n① 这个话题的核心争议是什么？\n   不是表面现象，而是背后的价值冲突\n\n② 你能想到哪些反驳你的论点？\n   强的论文需要主动承认并回应对方最强的论据\n\n③ 你的论点有没有边界条件？\n   在什么情况下你的论点成立？什么情况下不成立？\n\n结构建议：\nProblématique → Thèse → Antithèse → Synthèse\n\n每个部分都需要：论点 + 解释 + 例证 + 结论句\n\n💡 用今天的词块体现语言精确性，这是C1评分的核心！`
     },
     C2: {
         vocab: '提取接近母语水平的高级表达（CECR C2），包含修辞和文体变化',
         chunkType: '修辞表达和文体语块（如 loin s\'en faut, nonobstant + nom）',
-        chunkRule: '词块必须体现母语者自然表达，包含文体标注（书面正式/非正式用语）。词块必须是词块原形框架，不能截取变位、性数变化片段。',
+        chunkRule: '词块必须体现母语者自然表达，包含文体标注（书面正式/非正式用语）',
         exercise: '写作180-250字，文体风格统一且精准',
-        feedback: '按母语水平标准批改，重点评估文体、修辞和语言优雅度'
+        feedback: '按母语水平标准批改，重点评估文体、修辞和语言优雅度',
+        writingGuide: `【C2写作：超越论证，追求文体】\n\n在这个等级，内容的正确性是基础，评分的关键在于：\n\n① 文体一致性\n   你的语气是否从头到尾保持一致？\n   是学术论文？新闻评论？还是文学散文？\n\n② 论证的辩证深度\n   你有没有挑战自己最初的假设？\n   你的结论是否比开头更复杂、更有层次？\n\n③ 语言的精确与优雅\n   每个词是否都是最准确的选择？\n   句子节奏是否有变化？\n\n④ 修辞手法\n   是否适当使用了对比、类比、排比？\n\n💡 今天的词块体现了母语者的表达偏好，融入自然才是真正的C2。`
     }
 };
 
@@ -364,7 +431,7 @@ function getPrompts() {
 ### 1. [词块原形框架]
 **中文释义**：[翻译]
 **原文语境**：[原文完整句子]
-**用法框架**：[词块 + 占位说明]
+**用法框架**：[词块 + 占位说明，如：se lever + heure]
 **写作示例**：[新语境完整例句，不能照抄原文]
 **近义表达**：[1-2个同级替换]
 
@@ -379,41 +446,56 @@ function getPrompts() {
 ]
 \`\`\``;
 
+    // 填空练习prompt：要求输出结构化JSON，不输出答案
     const clozePrompt = `你是专业的DELF/DALF法语教师，为${lv}水平学生设计词块巩固练习。
 
 等级要求：${c.exercise}
 
-核心原则：
-1. 练习必须使用学生刚学的词块框架，检验能否正确套用
-2. 填空提供词块框架（如"prendre + ___"），不是猜单个词
-3. 写作任务要求主动使用本次词块
+重要规则：
+1. 练习一（填空题）：只输出题目，绝对不输出参考答案，答案通过JSON单独提供
+2. 填空用______标注空格，每题只有一个空格
+3. 练习三（写作）：只给题目，不给示例答案
+
+输出格式：先输出题目的Markdown，最后输出结构化JSON。
 
 ## ✍️ 词块巩固练习（${lv}）
 
 ### 练习一：词块填空
-从括号提示的词块框架中选择并正确变位填入：
+根据上下文填入合适的词块（注意变位）：
 
-1. [句子______句子续]（提示：[词块框架]）
-2. [句子______句子续]（提示：[词块框架]）
-3. [句子______句子续]（提示：[词块框架]）
-4. [句子______句子续]（提示：[词块框架]）
-5. [句子______句子续]（提示：[词块框架]）
+1. [完整句子，空格处用______标注]（提示：使用 [词块框架]）
+2. [完整句子______]（提示：使用 [词块框架]）
+3. [完整句子______]（提示：使用 [词块框架]）
+4. [完整句子______]（提示：使用 [词块框架]）
+5. [完整句子______]（提示：使用 [词块框架]）
 
-### 练习二：词块改写
-用括号中给出的词块框架改写句子：
+### 练习二：句子改写
+用括号中的词块框架改写句子，保持意思不变：
 
 1. 原句：[简单表达]
-   改写（使用[词块框架]）：______
+   改写（使用 [词块框架]）：______
 
 2. 原句：[简单表达]
-   改写（使用[词块框架]）：______
+   改写（使用 [词块框架]）：______
 
-### 练习三：写作输出（${c.exercise.split('，').find(s=>s.includes('字'))||'50-100字'}）
-基于文章主题完成写作，至少使用3个本次学习的词块：
+### 练习三：写作输出
+[写作题目，要求使用至少3个本次学习的词块]
+字数要求：${c.exercise.split('，').find(s=>s.includes('字'))||'50-100字'}
 
-[具体写作题目]`;
+\`\`\`json
+{
+  "fill_in": [
+    {"id":1,"sentence":"完整句子，空格处用___标注","answer":"正确答案","chunk":"对应词块","hint":"提示词块框架"},
+    {"id":2,"sentence":"...","answer":"...","chunk":"...","hint":"..."},
+    {"id":3,"sentence":"...","answer":"...","chunk":"...","hint":"..."},
+    {"id":4,"sentence":"...","answer":"...","chunk":"...","hint":"..."},
+    {"id":5,"sentence":"...","answer":"...","chunk":"...","hint":"..."}
+  ],
+  "writing_topic": "写作题目完整文字"
+}
+\`\`\``;
 
-    const feedbackPrompt = `你是专业的DELF/DALF法语教师，批改${lv}水平学生的练习。
+    const feedbackPrompt = `你是专业的DELF/DALF法语教师，批改${lv}水平学生的写作练习。
 
 批改标准（${lv}）：${c.feedback}
 
@@ -438,10 +520,25 @@ function getPrompts() {
 
 **总评**：[${c.feedback.includes('鼓励')?'温和鼓励性':'专业客观'}的总结]`;
 
-    return { vocab: vocabPrompt, cloze: clozePrompt, feedback: feedbackPrompt };
+    const reportPrompt = `你是专业的DELF/DALF法语教师，为学生的填空练习提供详细分析。
+
+请分析每道题的答题情况，用简短的一句话解释：
+- 答对的题：为什么这个词块在这里使用是正确的（语法/语境原因）
+- 答错的题：学生的错误是什么，正确答案为什么对
+- 显示答案的题：这个词块的核心用法是什么
+
+输出格式（JSON）：
+\`\`\`json
+[
+  {"id":1,"status":"correct|wrong|revealed","user_answer":"学生答案","correct_answer":"正确答案","explanation":"一句话解释"},
+  ...
+]
+\`\`\``;
+
+    return { vocab: vocabPrompt, cloze: clozePrompt, feedback: feedbackPrompt, report: reportPrompt };
 }
 
-// ==================== 解析词块JSON ====================
+// ==================== 解析函数 ====================
 function parseChunks(rawText) {
     try {
         const m = rawText.match(/```json\s*([\s\S]*?)\s*```/);
@@ -451,15 +548,294 @@ function parseChunks(rawText) {
     } catch(e) { return []; }
 }
 
+function parseClozeData(rawText) {
+    try {
+        const m = rawText.match(/```json\s*([\s\S]*?)\s*```/);
+        if (!m) return null;
+        return JSON.parse(m[1]);
+    } catch(e) { return null; }
+}
+
+// ==================== 法语字符标准化（忽略变音符）====================
+function normalizeFr(str) {
+    return str.toLowerCase()
+        .replace(/[àâä]/g,'a').replace(/[éèêë]/g,'e').replace(/[îï]/g,'i')
+        .replace(/[ôö]/g,'o').replace(/[ùûü]/g,'u').replace(/[ç]/g,'c')
+        .replace(/[œ]/g,'oe').replace(/[æ]/g,'ae')
+        .replace(/['\u2019\u2018]/g,"'")
+        .replace(/\s+/g,' ').trim();
+}
+
+function isAnswerCorrect(userInput, correctAnswer) {
+    const u = normalizeFr(userInput);
+    const c = normalizeFr(correctAnswer);
+    if (u === c) return true;
+    // 允许轻微差异：去掉所有空格和标点再比较
+    const uClean = u.replace(/[\s\-'.]/g,'');
+    const cClean = c.replace(/[\s\-'.]/g,'');
+    return uClean === cClean;
+}
+
+// ==================== 填空交互渲染 ====================
+// clozeData: {fill_in: [{id,sentence,answer,chunk,hint}], writing_topic}
+// 渲染练习一为交互式输入框，练习二和写作保持Markdown
+function renderClozeInteractive(clozeMarkdown, clozeData) {
+    if (!clozeData || !clozeData.fill_in) {
+        return `<div class="markdown-content">${clozeMarkdown}</div>`;
+    }
+
+    // 提取练习二和练习三的Markdown部分（去掉练习一和JSON块）
+    const withoutJson = clozeMarkdown.replace(/```json[\s\S]*?```/g,'');
+    // 取练习二之后的内容
+    const ex2Match = withoutJson.match(/(###\s*练习二[\s\S]*)/);
+    const ex2onward = ex2Match ? ex2Match[1] : '';
+
+    // 构建交互式填空HTML
+    const fillInHtml = clozeData.fill_in.map(q => {
+        const sentenceHtml = q.sentence.replace('___', `
+            <input
+                type="text"
+                class="cloze-input"
+                id="cloze-${q.id}"
+                data-answer="${q.answer.replace(/"/g,'&quot;')}"
+                data-chunk="${(q.chunk||'').replace(/"/g,'&quot;')}"
+                data-attempts="0"
+                placeholder="..."
+                onkeydown="handleClozeKey(event,${q.id})"
+                oninput="handleClozeInput(event,${q.id})"
+                style="min-width:${Math.max(80, q.answer.length*12)}px"
+            /><span class="cloze-attempts" id="cloze-att-${q.id}"></span>
+        `);
+        return `<div class="cloze-question">
+            <strong>${q.id}.</strong> ${sentenceHtml}
+            <span class="cloze-hint">（提示：${q.hint||q.chunk}）</span>
+        </div>`;
+    }).join('');
+
+    return `
+        <div class="exercise-section">
+            <div class="exercise-section-title">练习一：词块填空</div>
+            <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">在空格处输入答案，回车确认。忽略大小写和变音符（é=e, ç=c）。3次错误后显示答案。</p>
+            <div class="cloze-exercise" id="cloze-exercises">
+                ${fillInHtml}
+            </div>
+            <div id="fill-score-banner" style="display:none;"></div>
+        </div>
+        <div class="exercise-section">
+            <div class="markdown-content">${marked.parse(ex2onward)}</div>
+        </div>
+    `;
+}
+
+// ==================== 填空交互逻辑 ====================
+function handleClozeKey(event, id) {
+    if (event.key === 'Enter') {
+        checkClozeAnswer(id);
+    }
+}
+
+function handleClozeInput(event, id) {
+    // 实时清除错误状态，让用户重新尝试
+    const inp = event.target;
+    if (inp.classList.contains('wrong')) {
+        inp.classList.remove('wrong');
+    }
+}
+
+function checkClozeAnswer(id) {
+    const inp = document.getElementById(`cloze-${id}`);
+    if (!inp || inp.disabled) return;
+
+    const userVal = inp.value.trim();
+    if (!userVal) return;
+
+    const correct = inp.dataset.answer;
+    const attempts = parseInt(inp.dataset.attempts) + 1;
+    inp.dataset.attempts = attempts;
+
+    const attEl = document.getElementById(`cloze-att-${id}`);
+
+    if (isAnswerCorrect(userVal, correct)) {
+        inp.classList.remove('wrong');
+        inp.classList.add('correct');
+        inp.disabled = true;
+        if (attEl) attEl.textContent = '✓';
+        checkAllFilled();
+    } else {
+        inp.classList.add('wrong');
+        if (attempts >= 3) {
+            // 3次错误，显示答案
+            inp.value = correct;
+            inp.classList.remove('wrong');
+            inp.classList.add('revealed');
+            inp.disabled = true;
+            if (attEl) attEl.textContent = '（已显示）';
+            checkAllFilled();
+        } else {
+            if (attEl) attEl.textContent = `${attempts}/3`;
+            inp.select();
+        }
+    }
+}
+
+function checkAllFilled() {
+    const inputs = document.querySelectorAll('.cloze-input');
+    const allDone = Array.from(inputs).every(inp => inp.disabled);
+    if (!allDone) return;
+
+    // 统计分数
+    let correct = 0, wrong = 0, revealed = 0;
+    inputs.forEach(inp => {
+        if (inp.classList.contains('correct')) correct++;
+        else if (inp.classList.contains('revealed')) revealed++;
+        else wrong++;
+    });
+    const total = inputs.length;
+
+    // 显示分数banner
+    const banner = document.getElementById('fill-score-banner');
+    if (banner) {
+        const ratio = correct / total;
+        let cls = ratio >= 0.8 ? 'good' : ratio >= 0.5 ? 'ok' : 'poor';
+        const tkey = ratio >= 0.8 ? 'scoreGood' : ratio >= 0.5 ? 'scoreOk' : 'scorePoor';
+        const msg = state.t(tkey).replace('{n}', `${correct}/${total}`);
+        banner.className = `score-banner ${cls}`;
+        banner.textContent = msg;
+        banner.style.display = 'block';
+
+        // 显示精批报告按钮
+        const reportBtn = document.getElementById('generate-report-btn');
+        if (reportBtn) reportBtn.style.display = 'inline-block';
+
+        // 存储答题记录供精批使用
+        state._clozeResults = Array.from(inputs).map(inp => ({
+            id: parseInt(inp.id.replace('cloze-','')),
+            userAnswer: inp.dataset.userAnswer || inp.value,
+            correctAnswer: inp.dataset.answer,
+            status: inp.classList.contains('correct') ? 'correct' : inp.classList.contains('revealed') ? 'revealed' : 'wrong'
+        }));
+    }
+}
+
+async function generateReport() {
+    const btn = document.getElementById('generate-report-btn');
+    if (btn) { btn.disabled = true; btn.textContent = state.t('generatingReport'); }
+
+    const reportContainer = document.getElementById('report-container');
+    if (reportContainer) reportContainer.innerHTML = `<div class="text-center" style="padding:40px 0;"><div class="spinner"></div></div>`;
+
+    try {
+        const results = state._clozeResults || [];
+        const clozeData = state.learningData.clozeData;
+        const questions = clozeData?.fill_in || [];
+
+        const userAnswerSummary = results.map(r => {
+            const q = questions.find(q => q.id === r.id);
+            return `题${r.id}：句子="${q?.sentence||''}"，正确答案="${r.correctAnswer}"，学生答案="${r.userAnswer}"，状态=${r.status}`;
+        }).join('\n');
+
+        const prompts = getPrompts();
+        const rawReport = await callClaude(
+            `请分析以下填空题的答题情况：\n\n${userAnswerSummary}`,
+            prompts.report, true
+        );
+
+        const reportItems = parseClozeData(rawReport);
+
+        if (reportContainer && Array.isArray(reportItems)) {
+            const html = reportItems.map(item => {
+                const icon = item.status === 'correct' ? '✅' : item.status === 'revealed' ? '💡' : '❌';
+                return `<div class="report-item">
+                    <div class="report-icon">${icon}</div>
+                    <div class="report-content">
+                        <div class="report-word">${item.correct_answer}</div>
+                        <div class="report-reason">${item.explanation}</div>
+                        ${item.status !== 'correct' ? `<div class="report-reason" style="color:var(--accent-warm);">你的答案：${item.user_answer||'（未作答）'}</div>` : ''}
+                    </div>
+                </div>`;
+            }).join('');
+            reportContainer.innerHTML = `<h3 style="margin-bottom:16px;color:var(--accent-green);">${state.t('reportTitle')}</h3><div class="report-card">${html}</div>`;
+        }
+
+        if (btn) { btn.disabled = false; btn.textContent = state.t('checkAnswers'); }
+    } catch(e) {
+        if (reportContainer) reportContainer.innerHTML = `<p style="color:var(--accent-warm);">生成报告失败，请重试</p>`;
+        if (btn) { btn.disabled = false; btn.textContent = state.t('checkAnswers'); }
+    }
+}
+
+// ==================== 写作引导 ====================
+function toggleGuide(el) {
+    const body = el.nextElementSibling;
+    const arrow = el.querySelector('.writing-guide-arrow');
+    const isOpen = body.classList.contains('open');
+    body.classList.toggle('open', !isOpen);
+    if (arrow) arrow.classList.toggle('open', !isOpen);
+    el.querySelector('.guide-label').textContent = isOpen ? state.t('writingGuideBtn') : state.t('writingGuideClose');
+}
+
+function buildWritingSection(topic) {
+    const lv = state.userLevel || 'B1';
+    const guide = LEVEL_CFG[lv]?.writingGuide || '';
+    const chunkList = state.learningData.vocabularyChunks.map(c => `**${c.word}**`).join('、');
+
+    return `
+        <div class="exercise-section" style="margin-top:32px;">
+            <div class="exercise-section-title">练习三：写作输出</div>
+            <p style="margin-bottom:16px;color:var(--text-primary);font-size:15px;">${topic}</p>
+            ${chunkList ? `<p style="font-size:13px;color:var(--accent-green);margin-bottom:16px;">💡 本次词块：${chunkList}</p>` : ''}
+            ${guide ? `
+            <div class="writing-guide">
+                <div class="writing-guide-header" onclick="toggleGuide(this)">
+                    <span class="guide-label">${state.t('writingGuideBtn')}</span>
+                    <span class="writing-guide-arrow">▼</span>
+                </div>
+                <div class="writing-guide-body">${guide}</div>
+            </div>` : ''}
+            <textarea id="writing-ans" placeholder="在这里写你的答案..." style="margin-top:16px;min-height:180px;"></textarea>
+            <div id="generate-report-btn-wrapper" style="margin-top:20px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+                <button id="generate-report-btn" class="btn btn-secondary" onclick="generateReport()" style="display:none;">${state.t('checkAnswers')}</button>
+                <button class="btn btn-primary" onclick="submitWriting()">${state.t('submitWriting')}</button>
+            </div>
+            <div id="report-container" style="margin-top:24px;"></div>
+        </div>
+    `;
+}
+
+async function submitWriting() {
+    const ans = document.getElementById('writing-ans')?.value || '';
+    state.currentPhase = 3;
+    render();
+    document.getElementById('phase-content').innerHTML = `<div class="text-center" style="padding:100px 0;"><div class="spinner"></div><p style="margin-top:24px;color:var(--text-secondary);">${state.t('generatingReport')}</p></div>`;
+
+    try {
+        const p = getPrompts();
+        const chunkList = state.learningData.vocabularyChunks.map(c => c.word).join('、');
+        const result = await callClaude(
+            `原文：${state.articleText}\n\n已学词块：${chunkList}\n\n学生写作答案：${ans}`,
+            p.feedback
+        );
+        state.learningData.feedback = result;
+        state.saveProgress();
+
+        document.getElementById('phase-content').innerHTML = `
+            <div class="content-card">
+                <h2 class="section-title">${state.t('phase3')}</h2>
+                <div class="markdown-content">${result}</div>
+                <div class="flex gap-12 mt-20" style="justify-content:center;flex-wrap:wrap;">
+                    <button class="btn btn-secondary" onclick="dlPdf()">${state.t('downloadPdf')} 📄</button>
+                    <button class="btn btn-secondary" onclick="saveRecord()">${state.t('saveRecord')} 💾</button>
+                    <button class="btn btn-primary" onclick="nextPhase()">${state.t('next')}</button>
+                </div>
+            </div>`;
+    } catch(e) { showToast(state.t('error') + ': ' + e.message); }
+}
+
 // ==================== RENDER ====================
 function render() {
     const app = document.getElementById('app');
-    // 邀请码验证
     const entered = localStorage.getItem('invite_code');
-    if (entered !== CONFIG.INVITE_CODE) {
-        app.innerHTML = renderInviteGate();
-        return;
-    }
+    if (entered !== CONFIG.INVITE_CODE) { app.innerHTML = renderInviteGate(); return; }
     if (!CONFIG.WORKER_URL) { app.innerHTML = renderNoWorker(); return; }
     if (!state.currentMode) { app.innerHTML = renderHome(); return; }
     if (state.currentMode === 'learning') {
@@ -472,10 +848,9 @@ function render() {
 }
 
 function renderNoWorker() {
-    return `<div class="content-card" style="max-width:600px;margin:60px auto;text-align:center;">
-        <p style="color:var(--text-secondary);">Worker URL not configured. Please set CONFIG.WORKER_URL.</p>
-    </div>`;
+    return `<div class="content-card" style="max-width:600px;margin:60px auto;text-align:center;"><p style="color:var(--text-secondary);">Worker URL not configured.</p></div>`;
 }
+
 function renderInviteGate() {
     return `<div class="content-card" style="max-width:400px;margin:100px auto;text-align:center;">
         <div style="font-size:48px;margin-bottom:24px;">🔐</div>
@@ -487,14 +862,9 @@ function renderInviteGate() {
 
 function submitInviteCode() {
     const val = document.getElementById('invite-input')?.value.trim();
-    if (val === CONFIG.INVITE_CODE) {
-        localStorage.setItem('invite_code', val);
-        render();
-    } else {
-        showToast('邀请码错误');
-    }
+    if (val === CONFIG.INVITE_CODE) { localStorage.setItem('invite_code', val); render(); }
+    else showToast('邀请码错误');
 }
-window.submitInviteCode = submitInviteCode;
 
 function renderHome() {
     const due = state.getTodayReviews().length;
@@ -503,20 +873,14 @@ function renderHome() {
         <p class="text-center" style="font-size:16px;color:var(--text-secondary);margin-bottom:60px;">${state.t('selectMode')}</p>
         <div class="mode-grid">
             <div class="mode-card" onclick="selectMode('learning')">
-                <div class="mode-icon">📚</div>
-                <div class="mode-title">${state.t('learningMode')}</div>
-                <div class="mode-desc">${state.t('learningDesc')}</div>
+                <div class="mode-icon">📚</div><div class="mode-title">${state.t('learningMode')}</div><div class="mode-desc">${state.t('learningDesc')}</div>
             </div>
             <div class="mode-card" onclick="selectMode('review')">
-                <div class="mode-icon">🔄</div>
-                <div class="mode-title">${state.t('reviewMode')}</div>
-                <div class="mode-desc">${state.t('reviewDesc')}</div>
+                <div class="mode-icon">🔄</div><div class="mode-title">${state.t('reviewMode')}</div><div class="mode-desc">${state.t('reviewDesc')}</div>
                 ${due > 0 ? `<div style="margin-top:20px;padding:12px;background:rgba(166,123,123,0.1);border-radius:8px;color:var(--accent-warm);font-weight:600;font-size:14px;">${state.t('todayReview')}: ${due} ${state.t('words')}</div>` : ''}
             </div>
             <div class="mode-card" onclick="selectMode('import')">
-                <div class="mode-icon">📥</div>
-                <div class="mode-title">${state.t('importMode')}</div>
-                <div class="mode-desc">${state.t('importDesc')}</div>
+                <div class="mode-icon">📥</div><div class="mode-title">${state.t('importMode')}</div><div class="mode-desc">${state.t('importDesc')}</div>
             </div>
         </div>
     </div>`;
@@ -600,11 +964,9 @@ function renderImport() {
         <h2 class="section-title">${state.t('importMode')}</h2>
         <p style="margin-bottom:12px;color:var(--text-secondary);">${state.t('importFormat')}: ${state.t('importExample')}</p>
         <p style="font-family:monospace;color:var(--text-secondary);margin-bottom:20px;">
-            avoir besoin de + inf. | 需要做某事<br>
-            en ce qui concerne + nom | 关于……<br>
-            il est important de + inf. | 做某事很重要
+            avoir besoin de + inf. | 需要做某事<br>en ce qui concerne + nom | 关于……
         </p>
-        <textarea id="import-input" placeholder="avoir besoin de + inf. | 需要做某事" style="min-height:300px;"></textarea>
+        <textarea id="import-input" placeholder="avoir besoin de + inf. | 需要做某事" style="min-height:200px;"></textarea>
         <div class="flex justify-between mt-20">
             <button class="btn btn-secondary" onclick="backToHome()">${state.t('back')}</button>
             <button class="btn btn-primary" onclick="doImport()">${state.t('importBtn')}</button>
@@ -639,11 +1001,11 @@ function renderCard(card) {
     </div>`;
 }
 
-function showLoading() {
+function showLoading(msg) {
     const pc = document.getElementById('phase-content');
     if (pc) pc.innerHTML = `<div class="text-center" style="padding:100px 0;">
         <div class="spinner"></div>
-        <p style="margin-top:24px;color:var(--text-secondary);">${state.t('generating')}</p>
+        <p style="margin-top:24px;color:var(--text-secondary);">${msg||state.t('generating')}</p>
     </div>`;
 }
 
@@ -657,6 +1019,7 @@ function setLanguage(lang) {
 function selectMode(m) { state.currentMode=m; state.currentPhase=0; render(); }
 function selectLevel(lv) { state.setLevel(lv); render(); }
 function backToHome() { state.currentMode=null; state.currentPhase=0; state.clearProgress(); render(); }
+
 function updateWC() {
     const el=document.getElementById('article-input');
     if(!el) return;
@@ -665,25 +1028,19 @@ function updateWC() {
     const c=document.getElementById('wc');
     if(c) c.textContent=`${wc} ${state.t('wordCount')}`;
 }
+
 async function startLearning() {
-    // 检查使用次数
     const uses = parseInt(localStorage.getItem('use_count') || '0');
-    if(uses >= CONFIG.MAX_USES) {
-        showToast('内测次数已用完，感谢参与！');
-        return;
-    }
-    // 检查文章长度
+    if(uses >= CONFIG.MAX_USES) { showToast('内测次数已用完，感谢参与！'); return; }
     const wordCount = state.articleText.trim().split(/\s+/).length;
-    if(wordCount > 800) {
-        showToast('文章请控制在800字以内');
-        return;
-    }
-    // 记录使用次数
+    if(wordCount > 800) { showToast('文章请控制在800字以内'); return; }
     localStorage.setItem('use_count', uses + 1);
+
     const el=document.getElementById('article-input');
     state.articleText=el?.value.trim();
     if(!state.articleText){showToast(state.t('noInput'));return;}
     state.currentPhase=1; render(); showLoading();
+
     try {
         const p=getPrompts();
         const raw=await callClaude(`请分析以下文章：\n\n${state.articleText}`, p.vocab, true);
@@ -693,7 +1050,6 @@ async function startLearning() {
         state.learningData.vocabularyChunks=chunks;
         state.saveProgress();
 
-        // 词块自动加入复习库 + 存Supabase
         const added=state.addChunksToReview(chunks);
         if(chunks.length>0) await sbInsert('vocabulary', chunks.map(c=>({
             word:c.word, meaning:c.meaning, example:c.example||'', level:state.userLevel, created_at:new Date().toISOString()
@@ -719,42 +1075,30 @@ async function nextPhase() {
 }
 
 async function genCloze() {
-    showLoading();
+    showLoading(state.t('generatingExercise'));
     try {
         const p=getPrompts();
         const chunkList=state.learningData.vocabularyChunks.map(c=>c.word).join('、');
-        const result=await callClaude(`文章：${state.articleText}\n\n已学词块：${chunkList}`, p.cloze);
-        state.learningData.cloze=result; state.saveProgress();
+        const rawCloze=await callClaude(`文章：${state.articleText}\n\n已学词块：${chunkList}`, p.cloze, true);
+
+        // 解析结构化数据
+        const clozeData = parseClozeData(rawCloze);
+        state.learningData.clozeData = clozeData;
+
+        // 去掉JSON块，保留Markdown展示
+        const clozeMarkdown = marked.parse(rawCloze.replace(/```json[\s\S]*?```/g,'').trim());
+        state.learningData.cloze = clozeMarkdown;
+        state.saveProgress();
+
+        // 渲染交互式填空
+        const interactiveHtml = renderClozeInteractive(clozeMarkdown, clozeData);
+        const writingHtml = buildWritingSection(clozeData?.writing_topic || '请根据文章主题，运用今天学习的词块写一段话。');
+
         document.getElementById('phase-content').innerHTML=`
             <div class="content-card">
                 <h2 class="section-title">${state.t('phase2')}</h2>
-                <div class="markdown-content">${result}</div>
-                <textarea id="ans" placeholder="${state.t('typeWord')}..." style="margin-top:24px;min-height:200px;"></textarea>
-                <div class="text-center mt-20">
-                    <button class="btn btn-primary" onclick="submitAns()">${state.t('submit')}</button>
-                </div>
-            </div>`;
-    } catch(e) { showToast(state.t('error')+': '+e.message); }
-}
-
-async function submitAns() {
-    const ans=document.getElementById('ans')?.value||'';
-    state.currentPhase=3; render(); showLoading();
-    try {
-        const p=getPrompts();
-        const chunkList=state.learningData.vocabularyChunks.map(c=>c.word).join('、');
-        const result=await callClaude(
-            `原文：${state.articleText}\n\n已学词块：${chunkList}\n\n学生答案：${ans}`, p.feedback);
-        state.learningData.feedback=result; state.saveProgress();
-        document.getElementById('phase-content').innerHTML=`
-            <div class="content-card">
-                <h2 class="section-title">${state.t('phase3')}</h2>
-                <div class="markdown-content">${result}</div>
-                <div class="flex gap-12 mt-20" style="justify-content:center;flex-wrap:wrap;">
-                    <button class="btn btn-secondary" onclick="dlPdf()">${state.t('downloadPdf')} 📄</button>
-                    <button class="btn btn-secondary" onclick="saveRecord()">${state.t('saveRecord')} 💾</button>
-                    <button class="btn btn-primary" onclick="nextPhase()">${state.t('next')}</button>
-                </div>
+                ${interactiveHtml}
+                ${writingHtml}
             </div>`;
     } catch(e) { showToast(state.t('error')+': '+e.message); }
 }
@@ -876,11 +1220,11 @@ function restorePhase(phase, ld) {
             <div class="text-center mt-20"><button class="btn btn-primary" onclick="nextPhase()">${state.t('next')}</button></div>
         </div>`;
     } else if(phase===2&&ld.cloze) {
+        const interactiveHtml = renderClozeInteractive(ld.cloze, ld.clozeData||null);
+        const writingHtml = buildWritingSection(ld.clozeData?.writing_topic||'请根据文章主题写一段话。');
         pc.innerHTML=`<div class="content-card">
             <h2 class="section-title">${state.t('phase2')}</h2>
-            <div class="markdown-content">${ld.cloze}</div>
-            <textarea id="ans" placeholder="${state.t('typeWord')}..." style="margin-top:24px;min-height:200px;"></textarea>
-            <div class="text-center mt-20"><button class="btn btn-primary" onclick="submitAns()">${state.t('submit')}</button></div>
+            ${interactiveHtml}${writingHtml}
         </div>`;
     } else if(phase===3&&ld.feedback) {
         pc.innerHTML=`<div class="content-card">
@@ -910,15 +1254,14 @@ window.addEventListener('DOMContentLoaded', ()=>{
     setTimeout(()=>{ const el=document.getElementById('article-input'); if(el){const e=new Event('input');el.dispatchEvent(e);} },100);
 });
 
-// 全局导出
 Object.assign(window,{
     setLanguage, selectMode, selectLevel, backToHome, updateWC,
-    startLearning, nextPhase, submitAns, genCloze,
+    startLearning, nextPhase, submitWriting, genCloze,
     checkFC, recordMem, playAudio, dlPdf, saveRecord, doImport,
     goReview, restorePhase, showFlashcardEntry,
-    // 兼容旧名
+    submitInviteCode, handleClozeKey, handleClozeInput,
+    checkClozeAnswer, generateReport, toggleGuide,
     updateWordCount: updateWC,
-    submitAnswer: submitAns,
     downloadPdf: dlPdf,
     savePracticeRecord: saveRecord,
     importVocabulary: doImport,
