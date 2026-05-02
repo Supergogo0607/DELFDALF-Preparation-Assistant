@@ -463,11 +463,11 @@ function getPrompts() {
 ### 练习一：词块填空
 根据上下文填入合适的词块（注意变位）：
 
-1. [完整句子，空格处用______标注]（提示：使用 [词块框架]）
-2. [完整句子______]（提示：使用 [词块框架]）
-3. [完整句子______]（提示：使用 [词块框架]）
-4. [完整句子______]（提示：使用 [词块框架]）
-5. [完整句子______]（提示：使用 [词块框架]）
+1. [完整句子，空格处用______标注]
+2. [完整句子______]
+3. [完整句子______]
+4. [完整句子______]
+5. [完整句子______]
 
 ### 练习二：句子改写
 用括号中的词块框架改写句子，保持意思不变：
@@ -516,7 +516,7 @@ function getPrompts() {
 ## 📊 本次评分
 - 词块运用：[X]/5
 - 语法准确：[X]/5
-- 内容表达：[X]/5
+- 内容和逻辑表达：[X]/5
 
 **总评**：[${c.feedback.includes('鼓励')?'温和鼓励性':'专业客观'}的总结]`;
 
@@ -615,7 +615,7 @@ function renderClozeInteractive(clozeMarkdown, clozeData) {
     return `
         <div class="exercise-section">
             <div class="exercise-section-title">练习一：词块填空</div>
-            <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">在空格处输入答案，回车确认。忽略大小写和变音符（é=e, ç=c）。3次错误后显示答案。</p>
+            <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">在空格处输入答案，回车确认。3次错误后显示答案。</p>
             <div class="cloze-exercise" id="cloze-exercises">
                 ${fillInHtml}
             </div>
