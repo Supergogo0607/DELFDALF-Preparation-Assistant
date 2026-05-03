@@ -95,6 +95,7 @@ export function bindPageEvents() {
     // 关卡完成按钮
     bindId('btn-complete-stage1', () => completeAndNext(1));
     bindId('btn-complete-stage2', () => completeAndNext(2));
+    bindId('btn-complete-stage3', () => completeAndNext(3));
     bindId('btn-complete-stage4', () => completeAndNext(4));
     bindId('btn-complete-stage5', () => {
         completeAndNext(5);
