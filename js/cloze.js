@@ -165,6 +165,10 @@ function checkAllFilled() {
         // 显示精批报告按钮
         const reportBtn = document.getElementById('btn-generate-report');
         if (reportBtn) reportBtn.style.display = 'inline-block';
+
+        // 显示关卡三完成按钮
+        const nextBtn = document.getElementById('stage3-next-btn');
+        if (nextBtn) nextBtn.style.display = 'block';
     }
 }
 
