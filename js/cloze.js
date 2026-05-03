@@ -166,9 +166,17 @@ function checkAllFilled() {
         const reportBtn = document.getElementById('btn-generate-report');
         if (reportBtn) reportBtn.style.display = 'inline-block';
 
-        // 显示关卡三完成按钮
+        // 显示关卡三完成按钮 + 用自定义事件通知actions.js
         const nextBtn = document.getElementById('stage3-next-btn');
-        if (nextBtn) nextBtn.style.display = 'block';
+        if (nextBtn) {
+            nextBtn.style.display = 'block';
+            const btn = document.getElementById('btn-complete-stage3');
+            if (btn) {
+                btn.addEventListener('click', () => {
+                    document.dispatchEvent(new CustomEvent('stage3-complete'));
+                });
+            }
+        }
     }
 }
 
