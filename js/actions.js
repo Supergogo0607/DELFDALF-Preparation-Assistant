@@ -95,7 +95,8 @@ export function bindPageEvents() {
     // 关卡完成按钮
     bindId('btn-complete-stage1', () => completeAndNext(1));
     bindId('btn-complete-stage2', () => completeAndNext(2));
-    bindId('btn-complete-stage3', () => completeAndNext(3));
+    // 关卡三通过自定义事件触发（按钮在填空完成后才出现，无法提前绑定）
+    document.addEventListener('stage3-complete', () => completeAndNext(3), { once: true });
     bindId('btn-complete-stage4', () => completeAndNext(4));
     bindId('btn-complete-stage5', () => {
         completeAndNext(5);
