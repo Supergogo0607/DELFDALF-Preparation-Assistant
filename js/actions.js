@@ -1,7 +1,7 @@
 import { state } from './state.js';
 import { CONFIG } from './config.js';
 import { callClaude, parseChunks, parseJSON, sbInsert } from './api.js';
-import { getPrompts } from './prompts.js';
+import { getPrompts, LEVEL_CFG } from './prompts.js';
 import {
     render, showToast, showLoading, renderSessionPage,
     renderStage1Content, renderStage2Content, renderStage3Shell,
@@ -9,8 +9,7 @@ import {
     renderFlashcard
 } from './render.js';
 import {
-    renderClozeInteractive, buildWritingSection,
-    bindClozeEvents, generateReport, bindWritingGuideToggle
+    renderClozeInteractive, generateReport, bindClozeEvents
 } from './cloze.js';
 
 // ==================== 语言切换 ====================
@@ -149,8 +148,20 @@ export function bindPageEvents() {
     // 导入
     bindId('btn-do-import', doImport);
 
-    // 写作引导折叠
-    bindWritingGuideToggle();
+    // 写作引导折叠（HTML插入后才绑定，避免找不到元素）
+    const guideToggle = document.getElementById('writing-guide-toggle');
+    if (guideToggle) {
+        guideToggle.addEventListener('click', () => {
+            const body = document.getElementById('guide-body');
+            const arrow = document.getElementById('guide-arrow');
+            const label = document.getElementById('guide-label');
+            if (!body) return;
+            const isOpen = body.classList.contains('open');
+            body.classList.toggle('open', !isOpen);
+            if (arrow) arrow.classList.toggle('open', !isOpen);
+            if (label) label.textContent = isOpen ? '💡 没有思路？点击展开引导' : '收起引导';
+        });
+    }
 
     // 填空事件
     bindClozeEvents();
@@ -206,20 +217,27 @@ async function showStageContent(n) {
     if (data && n === 2) { sc.innerHTML = renderStage2Content(data.thematicItems); bindPageEvents(); return; }
     if (data && n === 3) {
         const ih = renderClozeInteractive(data.clozeMarkdown, data.clozeData);
-        const wh = buildWritingSection(data.clozeData?.writing_topic || '');
-        sc.innerHTML = renderStage3Shell(ih, wh);
-        bindPageEvents(); bindClozeEvents(); bindWritingGuideToggle();
+        sc.innerHTML = renderStage3Shell(ih, '');
+        bindPageEvents(); bindClozeEvents();
         return;
     }
     if (n === 4) { sc.innerHTML = renderStage4Content(); bindPageEvents(); return; }
-    if (data && n === 5) { sc.innerHTML = renderStage5Content(data.feedback); bindPageEvents(); return; }
+    if (n === 5) {
+        // 关卡五：显示写作界面（无论有无缓存都重新显示，因为需要用户输入）
+        sc.innerHTML = buildStage5WritingUI(state.session?.stages[3]?.data?.clozeData?.writing_topic || '');
+        bindPageEvents();
+        return;
+    }
 
     // 没有缓存，重新生成
     if (n === 1) await runStage1();
     else if (n === 2) await runStage2();
     else if (n === 3) await runStage3();
     else if (n === 4) { sc.innerHTML = renderStage4Content(); bindPageEvents(); }
-    else if (n === 5) await runStage5Writing('');
+    else if (n === 5) {
+        sc.innerHTML = buildStage5WritingUI(state.session?.stages[3]?.data?.clozeData?.writing_topic || '');
+        bindPageEvents();
+    }
 }
 
 // ==================== 关卡完成 ====================
@@ -335,16 +353,40 @@ async function runStage3() {
         state._saveSession();
 
         const ih = renderClozeInteractive(clozeMarkdown, clozeData);
-        const wh = buildWritingSection(clozeData?.writing_topic || '请根据文章主题写一段话。');
 
-        sc.innerHTML = renderStage3Shell(ih, wh);
+        sc.innerHTML = renderStage3Shell(ih, '');
         bindPageEvents();
         bindClozeEvents();
-        bindWritingGuideToggle();
 
     } catch(e) {
         showToast(state.t('error') + ': ' + e.message);
     }
+}
+
+// ==================== 关卡五：写作界面 ====================
+function buildStage5WritingUI(topic) {
+    const lv = state.userLevel || 'B1';
+    const guide = LEVEL_CFG[lv]?.writingGuide || '';
+    const chunks = state.session?.stages[1]?.data?.chunks || [];
+    const chunkList = chunks.map(c => `<strong>${c.word}</strong>`).join('、');
+    const writingTopic = topic || '请根据文章主题，运用今天学习的词块写一段话。';
+
+    return `<div class="content-card fade-in">
+        <h2 class="section-title">${state.t('stage5Full')}</h2>
+        <p style="margin-bottom:14px;color:var(--text-primary);font-size:15px;font-weight:500;">${writingTopic}</p>
+        ${chunkList ? `<p style="font-size:13px;color:var(--accent-green);margin-bottom:14px;">💡 可用词块：${chunkList}</p>` : ''}
+        ${guide ? `<div class="writing-guide">
+            <div class="writing-guide-header" id="writing-guide-toggle">
+                <span id="guide-label">💡 没有思路？点击展开引导</span>
+                <span class="writing-guide-arrow" id="guide-arrow">▼</span>
+            </div>
+            <div class="writing-guide-body" id="guide-body">${guide}</div>
+        </div>` : ''}
+        <textarea id="writing-ans" placeholder="在这里写你的答案..." style="margin-top:16px;min-height:200px;"></textarea>
+        <div class="text-center mt-20">
+            <button class="btn btn-primary" id="btn-submit-writing">提交写作</button>
+        </div>
+    </div>`;
 }
 
 // ==================== 关卡五：写作批改 ====================
