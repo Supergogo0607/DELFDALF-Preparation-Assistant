@@ -248,6 +248,11 @@ export function renderStage3Shell(interactiveHtml, writingHtml) {
         <h2 class="section-title">${state.t('stage3Full')}</h2>
         ${interactiveHtml}
         ${writingHtml}
+        <div id="stage3-next-btn" style="display:none;text-align:center;margin-top:24px;">
+            <hr style="margin-bottom:24px;border:none;border-top:1px solid var(--border-soft);">
+            <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">填空练习完成！进入下一关继续学习 👇</p>
+            <button class="btn btn-primary" id="btn-complete-stage3">${state.t('next')} →</button>
+        </div>
     </div>`;
 }
 
