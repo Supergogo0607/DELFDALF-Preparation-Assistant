@@ -77,34 +77,7 @@ export function renderClozeInteractive(clozeMarkdown, clozeData) {
     `;
 }
 
-// ==================== 写作部分 ====================
-export function buildWritingSection(topic) {
-    const lv = state.userLevel || 'B1';
-    const guide = LEVEL_CFG[lv]?.writingGuide || '';
-    const chunks = state.session?.stages[1]?.data?.chunks || [];
-    const chunkList = chunks.map(c => `<strong>${c.word}</strong>`).join('、');
-
-    return `
-        <div class="exercise-section" style="margin-top:28px;">
-            <div class="exercise-section-title">练习三：写作输出</div>
-            <p style="margin-bottom:14px;color:var(--text-primary);font-size:15px;">${topic}</p>
-            ${chunkList ? `<p style="font-size:13px;color:var(--accent-green);margin-bottom:14px;">💡 本次词块：${chunkList}</p>` : ''}
-            ${guide ? `<div class="writing-guide">
-                <div class="writing-guide-header" id="writing-guide-toggle">
-                    <span id="guide-label">💡 没有思路？点击展开引导</span>
-                    <span class="writing-guide-arrow" id="guide-arrow">▼</span>
-                </div>
-                <div class="writing-guide-body" id="guide-body">${guide}</div>
-            </div>` : ''}
-            <textarea id="writing-ans" placeholder="在这里写你的答案..." style="margin-top:14px;min-height:180px;"></textarea>
-            <div style="margin-top:16px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
-                <button class="btn btn-secondary" id="btn-generate-report" style="display:none;">📊 查看精批报告</button>
-                <button class="btn btn-primary" id="btn-submit-writing">提交写作</button>
-            </div>
-            <div id="report-container" style="margin-top:20px;"></div>
-        </div>
-    `;
-}
+// buildWritingSection 已移至 actions.js 的 renderStage5Writing
 
 // ==================== 交互事件 ====================
 export function bindClozeEvents() {
@@ -237,18 +210,4 @@ export async function generateReport(clozeData) {
     }
 }
 
-// ==================== 写作引导切换 ====================
-export function bindWritingGuideToggle() {
-    const toggle = document.getElementById('writing-guide-toggle');
-    if (!toggle) return;
-    toggle.addEventListener('click', () => {
-        const body = document.getElementById('guide-body');
-        const arrow = document.getElementById('guide-arrow');
-        const label = document.getElementById('guide-label');
-        if (!body) return;
-        const isOpen = body.classList.contains('open');
-        body.classList.toggle('open', !isOpen);
-        if (arrow) arrow.classList.toggle('open', !isOpen);
-        if (label) label.textContent = isOpen ? '💡 没有思路？点击展开引导' : '收起引导';
-    });
-}
+// bindWritingGuideToggle 已移至 actions.js
