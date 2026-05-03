@@ -72,18 +72,32 @@ export function getPrompts() {
 - 词块类型：${c.chunkType}
 - 词块规范：${c.chunkRule}
 
-词块定义：可从原文抽离、在新语境直接套用的固定表达单位（原形框架）。
+【词块原形的严格规则】
+词块必须以"可直接教给学生背诵的原形框架"呈现，绝不能从原文截取已变位的片段。
+
+✅ 正确示例：
+- "devoir + être + participe passé"（原形框架，学生可套用任何主语）
+- "discuter + de + nom"（动词原形 + 介词结构）
+- "c'est pourquoi + proposition"（连接词框架）
+- "il convient de + inf."（句式框架）
+
+❌ 错误示例：
+- "doivent être discutées"（已变位，且限定了阴性复数，不可迁移）
+- "c'est pourquoi les modalités doivent"（照抄原文句子片段）
+- "est très bonne"（无法独立使用的碎片）
+
+判断标准：把这个词块单独给学生看，学生能否在任何新话题中套用它？如果不能，就不是合格的词块。
 
 输出格式：先输出Markdown展示，最后输出JSON。
 
 ## 📚 可迁移词块（${lv}）
 
-### 1. [词块原形框架]
+### 1. [词块原形框架，如：discuter de + nom]
 **中文释义**：[翻译]
 **原文语境**：[原文完整句子]
-**用法框架**：[词块 + 占位说明，如：se lever + heure]
-**写作示例**：[新语境完整例句，不能照抄原文]
-**近义表达**：[1-2个同级替换]
+**用法框架**：[动词原形 + 占位说明，如：discuter de + nom / devoir + inf.]
+**写作示例**：[用原形框架造一个全新例句，绝不照抄原文]
+**近义表达**：[1-2个同级替换，也要用原形]
 
 ---
 
@@ -91,7 +105,7 @@ export function getPrompts() {
 
 \`\`\`json
 [
-  {"word":"词块原形","meaning":"中文释义","example":"写作示例句","type":"词块类型"},
+  {"word":"词块原形框架（如：discuter de + nom）","meaning":"中文释义","example":"写作示例句","type":"词块类型"},
   ...
 ]
 \`\`\``;
