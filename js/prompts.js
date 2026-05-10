@@ -302,6 +302,9 @@ ${bannedStr}
 
     return levelInstructions[lv] || levelInstructions['B1'];
 }
+
+// ==================== Prompts ====================
+export function getPrompts() {
     const lv = state.userLevel || 'B1';
     const c = LEVEL_CFG[lv] || LEVEL_CFG.B1;
 
