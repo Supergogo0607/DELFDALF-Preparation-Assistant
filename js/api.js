@@ -3,16 +3,22 @@ import { state } from './state.js';
 import { showToast } from './render.js';
 
 // ==================== Claude API ====================
-export async function callClaude(userMsg, sysPrompt, raw = false) {
+export async function callClaude(userMsg, sysPrompt, raw = false, useWebSearch = false) {
+    const body = {
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 3000,
+        system: sysPrompt,
+        messages: [{ role: 'user', content: userMsg }]
+    };
+
+    if (useWebSearch) {
+        body.tools = [{ type: 'web_search_20250305', name: 'web_search' }];
+    }
+
     const res = await fetch(CONFIG.WORKER_URL + '/api/claude', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            model: 'claude-sonnet-4-20250514',
-            max_tokens: 3000,
-            system: sysPrompt,
-            messages: [{ role: 'user', content: userMsg }]
-        })
+        body: JSON.stringify(body)
     });
 
     if (!res.ok) {
@@ -21,7 +27,11 @@ export async function callClaude(userMsg, sysPrompt, raw = false) {
     }
 
     const data = await res.json();
-    const text = data.content.find(c => c.type === 'text')?.text || '';
+    // 提取所有text块（web_search可能返回多个content块）
+    const text = data.content
+        .filter(c => c.type === 'text')
+        .map(c => c.text)
+        .join('\n') || '';
     return raw ? text : marked.parse(text);
 }
 
