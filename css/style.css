@@ -539,6 +539,24 @@ textarea:focus, input:focus {
     padding: 48px 40px;
 }
 
+/* ==================== Banned Words ==================== */
+.banned-word {
+    border-bottom: 2px solid var(--accent-warm);
+    cursor: help;
+    transition: background 0.15s;
+}
+
+.banned-word:hover {
+    background: rgba(166,123,123,0.1);
+}
+
+/* contenteditable placeholder */
+[contenteditable]:empty:before {
+    content: attr(data-placeholder);
+    color: var(--text-muted);
+    pointer-events: none;
+}
+
 /* ==================== Responsive ==================== */
 @media (max-width: 768px) {
     .mode-grid { grid-template-columns: 1fr; }
