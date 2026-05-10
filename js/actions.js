@@ -472,7 +472,7 @@ function buildStage5WritingUI(topic, scaffoldingHtml) {
 }
 
 // ==================== 禁用词实时标记 ====================
-function onWritingInput() {
+export function onWritingInput() {
     const editor = document.getElementById('writing-editor');
     if (!editor) return;
 
