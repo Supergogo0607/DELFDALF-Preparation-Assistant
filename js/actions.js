@@ -1,7 +1,7 @@
 import { state } from './state.js';
 import { CONFIG } from './config.js';
 import { callClaude, parseChunks, parseJSON, sbInsert } from './api.js';
-import { getPrompts, LEVEL_CFG } from './prompts.js';
+import { getPrompts, LEVEL_CFG, getScaffoldingPrompt, BANNED_WORDS } from './prompts.js';
 import {
     render, showToast, showLoading, renderSessionPage,
     renderStage1Content, renderStage2Content, renderStage3Shell,
@@ -225,9 +225,12 @@ async function showStageContent(n) {
     }
     if (n === 4) { sc.innerHTML = renderStage4Content(); bindPageEvents(); return; }
     if (n === 5) {
-        // 关卡五：显示写作界面（无论有无缓存都重新显示，因为需要用户输入）
-        sc.innerHTML = buildStage5WritingUI(state.session?.stages[3]?.data?.clozeData?.writing_topic || '');
+        // 关卡五：先显示写作界面（无引导），再异步生成引导
+        const topic = state.session?.stages[3]?.data?.clozeData?.writing_topic || '';
+        sc.innerHTML = buildStage5WritingUI(topic, null);
         bindPageEvents();
+        // 异步生成scaffolding
+        generateScaffolding(topic);
         return;
     }
 
@@ -237,8 +240,10 @@ async function showStageContent(n) {
     else if (n === 3) await runStage3();
     else if (n === 4) { sc.innerHTML = renderStage4Content(); bindPageEvents(); }
     else if (n === 5) {
-        sc.innerHTML = buildStage5WritingUI(state.session?.stages[3]?.data?.clozeData?.writing_topic || '');
+        const topic = state.session?.stages[3]?.data?.clozeData?.writing_topic || '';
+        sc.innerHTML = buildStage5WritingUI(topic, null);
         bindPageEvents();
+        generateScaffolding(topic);
     }
 }
 
@@ -365,35 +370,173 @@ async function runStage3() {
     }
 }
 
-// ==================== 关卡五：写作界面 ====================
-function buildStage5WritingUI(topic) {
+// ==================== Scaffolding动态生成 ====================
+async function generateScaffolding(topic) {
     const lv = state.userLevel || 'B1';
-    const guide = LEVEL_CFG[lv]?.writingGuide || '';
+    const chunks = state.session?.stages[1]?.data?.chunks || [];
+    const needsSearch = ['B2','C1','C2'].includes(lv);
+
+    try {
+        const sysPrompt = getScaffoldingPrompt(
+            lv,
+            state.session?.articleText || '',
+            topic,
+            chunks
+        );
+
+        const raw = await callClaude(
+            `Génère le guide de réflexion pour ce sujet d'écriture : "${topic}"`,
+            sysPrompt,
+            false,
+            needsSearch  // B2-C2触发联网搜索
+        );
+
+        // 把生成的引导插入界面
+        const guideBody = document.getElementById('guide-body');
+        const guideToggle = document.getElementById('writing-guide-toggle');
+
+        if (guideBody) {
+            guideBody.innerHTML = raw;
+        } else {
+            // 引导容器还不存在，重建界面
+            const sc = document.getElementById('stage-content');
+            if (sc) {
+                sc.innerHTML = buildStage5WritingUI(topic, raw);
+                bindPageEvents();
+            }
+        }
+
+        // 更新toggle标题
+        const label = document.getElementById('guide-label');
+        if (label) label.textContent = '💡 思路引导（点击展开）';
+
+    } catch(e) {
+        console.warn('Scaffolding generation failed:', e);
+        // 失败了也没关系，用户还是可以写作
+        const guideBody = document.getElementById('guide-body');
+        if (guideBody) guideBody.innerHTML = '<p style="color:var(--text-muted);font-size:13px;">引导生成失败，请直接开始写作。</p>';
+    }
+}
+
+// ==================== 关卡五：写作界面 ====================
+function buildStage5WritingUI(topic, scaffoldingHtml) {
+    const lv = state.userLevel || 'B1';
     const chunks = state.session?.stages[1]?.data?.chunks || [];
     const chunkList = chunks.map(c => `<strong>${c.word}</strong>`).join('、');
     const writingTopic = topic || '请根据文章主题，运用今天学习的词块写一段话。';
+    const banned = BANNED_WORDS[lv] || [];
+    const hasBanned = banned.length > 0;
 
     return `<div class="content-card fade-in">
         <h2 class="section-title">${state.t('stage5Full')}</h2>
         <p style="margin-bottom:14px;color:var(--text-primary);font-size:15px;font-weight:500;">${writingTopic}</p>
         ${chunkList ? `<p style="font-size:13px;color:var(--accent-green);margin-bottom:14px;">💡 可用词块：${chunkList}</p>` : ''}
-        ${guide ? `<div class="writing-guide">
+
+        ${scaffoldingHtml ? `
+        <div class="writing-guide">
             <div class="writing-guide-header" id="writing-guide-toggle">
-                <span id="guide-label">💡 没有思路？点击展开引导</span>
+                <span id="guide-label">💡 思路引导（点击展开）</span>
                 <span class="writing-guide-arrow" id="guide-arrow">▼</span>
             </div>
-            <div class="writing-guide-body" id="guide-body">${guide}</div>
+            <div class="writing-guide-body" id="guide-body">${scaffoldingHtml}</div>
+        </div>` : `
+        <div style="padding:16px;background:rgba(94,109,98,0.05);border-radius:8px;margin-bottom:16px;font-size:13px;color:var(--text-muted);">
+            思路引导生成中...
+        </div>`}
+
+        ${hasBanned ? `
+        <div style="margin:12px 0;padding:10px 14px;background:rgba(166,123,123,0.08);border-radius:8px;font-size:12px;color:var(--accent-warm);">
+            ⚠️ ${lv}等级禁用词（写作中会自动标记）：
+            ${banned.map(w => `<code style="background:rgba(166,123,123,0.15);padding:1px 5px;border-radius:3px;margin:0 2px;">${w}</code>`).join(' ')}
         </div>` : ''}
-        <textarea id="writing-ans" placeholder="在这里写你的答案..." style="margin-top:16px;min-height:200px;"></textarea>
+
+        <div style="position:relative;margin-top:16px;">
+            <div
+                id="writing-editor"
+                contenteditable="true"
+                data-placeholder="在这里写你的答案..."
+                style="min-height:200px;padding:16px;border:1px solid var(--border-soft);border-radius:12px;background:white;font-family:inherit;font-size:16px;line-height:1.8;outline:none;transition:border-color 0.3s;"
+                oninput="onWritingInput()"
+                onfocus="this.style.borderColor='var(--accent-green)';this.style.boxShadow='0 0 0 4px rgba(94,109,98,0.08)'"
+                onblur="this.style.borderColor='var(--border-soft)';this.style.boxShadow='none'"
+            ></div>
+            ${hasBanned ? `<div id="writing-legend" style="margin-top:8px;font-size:11px;color:var(--text-muted);">
+                <span style="border-bottom:2px solid var(--accent-warm);padding-bottom:1px;">下划线</span> = 建议思考替换的简单词
+            </div>` : ''}
+        </div>
+
         <div class="text-center mt-20">
             <button class="btn btn-primary" id="btn-submit-writing">提交写作</button>
         </div>
     </div>`;
 }
 
+// ==================== 禁用词实时标记 ====================
+function onWritingInput() {
+    const editor = document.getElementById('writing-editor');
+    if (!editor) return;
+
+    const lv = state.userLevel || 'B1';
+    const banned = BANNED_WORDS[lv] || [];
+    if (banned.length === 0) return;
+
+    // 保存光标位置
+    const selection = window.getSelection();
+    const range = selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
+    let cursorOffset = 0;
+    if (range) {
+        const preRange = document.createRange();
+        preRange.selectNodeContents(editor);
+        preRange.setEnd(range.endContainer, range.endOffset);
+        cursorOffset = preRange.toString().length;
+    }
+
+    // 获取纯文本
+    const text = editor.innerText || '';
+
+    // 标记禁用词（只标记，不提示替换词）
+    let html = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    banned.forEach(word => {
+        const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const regex = new RegExp(`\\b(${escaped})\\b`, 'gi');
+        html = html.replace(regex, `<span class="banned-word" title="简单词，思考是否可以替换">$1</span>`);
+    });
+
+    editor.innerHTML = html;
+
+    // 恢复光标位置
+    if (range && cursorOffset >= 0) {
+        try {
+            const newRange = document.createRange();
+            let charCount = 0;
+            let found = false;
+            const walk = (node) => {
+                if (found) return;
+                if (node.nodeType === Node.TEXT_NODE) {
+                    if (charCount + node.length >= cursorOffset) {
+                        newRange.setStart(node, cursorOffset - charCount);
+                        newRange.collapse(true);
+                        found = true;
+                    }
+                    charCount += node.length;
+                } else {
+                    for (const child of node.childNodes) walk(child);
+                }
+            };
+            walk(editor);
+            if (found) {
+                selection.removeAllRanges();
+                selection.addRange(newRange);
+            }
+        } catch(e) { /* 光标恢复失败时忽略 */ }
+    }
+}
+
 // ==================== 关卡五：写作批改 ====================
 async function submitWriting() {
-    const ans = document.getElementById('writing-ans')?.value || '';
+    // 从contenteditable div读取纯文本
+    const editor = document.getElementById('writing-editor');
+    const ans = editor ? (editor.innerText || editor.textContent || '').trim() : '';
     const sc = document.getElementById('stage-content');
     if (!sc) return;
     showLoading('stage-content', state.t('generatingReport'));
