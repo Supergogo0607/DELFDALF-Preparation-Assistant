@@ -58,8 +58,250 @@ export const LEVEL_CFG = {
     }
 };
 
-// ==================== Prompts ====================
-export function getPrompts() {
+// ==================== 禁用词列表 ====================
+export const BANNED_WORDS = {
+    // A1-B2：仅用于激励提示，不强制
+    A1: [],
+    A2: [],
+    B1: [],
+    B2: ['good', 'bad', 'bien', 'bon', 'mauvais', 'beaucoup', 'très',
+         'penser', 'croire', 'les gens', 'les personnes', 'chose', 'truc',
+         'faire', 'mettre', 'dire', 'voir', 'montrer', 'important', 'problème'],
+    C1: ['good', 'bad', 'bien', 'bon', 'mauvais', 'beaucoup', 'très',
+         'penser', 'croire', 'les gens', 'chose', 'truc',
+         'faire', 'mettre', 'dire', 'voir', 'montrer',
+         'important', 'problème', 'normal', 'utiliser', 'permettre',
+         'montrer', 'expliquer', 'dire que', 'il y a'],
+    C2: ['good', 'bad', 'bien', 'bon', 'mauvais', 'beaucoup', 'très',
+         'penser', 'croire', 'les gens', 'chose', 'truc',
+         'faire', 'mettre', 'dire', 'voir', 'montrer',
+         'important', 'problème', 'normal', 'utiliser', 'permettre',
+         'expliquer', 'dire que', 'il y a', 'avoir', 'être important',
+         'tout le monde', 'on peut', 'on doit'],
+};
+
+// ==================== Scaffolding Prompt ====================
+export function getScaffoldingPrompt(level, articleText, writingTopic, chunks) {
+    const lv = level || 'B1';
+    const chunkList = chunks.map(c => c.word).join(', ');
+    const needsSearch = ['B2','C1','C2'].includes(lv);
+    const banned = BANNED_WORDS[lv] || [];
+    const bannedStr = banned.length > 0 ? `\n⚠️ Mots à éviter : ${banned.join(', ')}` : '';
+
+    const levelInstructions = {
+        A1: `Tu es un professeur de français bienveillant pour débutants absolus (A1).
+
+L'article parle de : "${articleText.substring(0, 200)}..."
+Sujet d'écriture : "${writingTopic}"
+Expressions apprises : ${chunkList}
+
+Génère un guide de réflexion en CHINOIS (中文) avec quelques exemples en français.
+
+Format de sortie :
+📝 [Titre court lié au sujet de l'article en chinois]
+
+先想想你自己——
+[2-3个引导学生联系自身经历的中文问题，要非常具体和日常]
+
+现在用法语说：
+
+第一步：[具体问题]
+→ [句式框架，动词用原形]
+
+第二步：[具体问题]
+→ [句式框架]
+
+第三步：[具体问题]
+→ [句式框架]
+
+💡 今天学的词块可以帮你：${chunkList}`,
+
+        A2: `Tu es un professeur de français pour niveau A2.
+
+L'article parle de : "${articleText.substring(0, 200)}..."
+Sujet d'écriture : "${writingTopic}"
+Expressions apprises : ${chunkList}
+
+Génère un guide en CHINOIS avec exemples en français.
+
+Format :
+📝 [Titre lié au sujet]
+
+先停下来想想你自己——
+[2-3个引导学生回忆具体经历的问题，要有画面感]
+
+现在用法语写一小段：
+
+第一步：[描述现状/发生了什么]
+→ [句式框架，过去时/现在时]
+
+第二步：[说说感受或原因]
+→ [句式框架]
+
+第三步：[给出简单看法]
+→ [句式框架]
+
+💡 今天学的词块：${chunkList}`,
+
+        B1: `Tu es un professeur de français pour niveau B1.
+
+L'article parle de : "${articleText.substring(0, 300)}..."
+Sujet d'écriture : "${writingTopic}"
+Expressions apprises : ${chunkList}
+
+Génère un guide en CHINOIS avec structure AEC et exemples en français.
+AEC = Argument（论点）- Explication（解释）- Conséquence（后果）
+
+Format :
+📝 [Titre lié au sujet]
+
+先停下来想想你自己——
+[2-3个追问式问题，引导学生深挖：为什么？有没有例子？]
+
+然后用AEC结构组织你的答案：
+
+A — Argument（你的论点）
+先表明立场：
+→ Je pense que / À mon avis, [ta position]
+追问自己：我为什么这样认为？
+
+E — Explication（解释为什么）
+给出具体原因，越具体越好：
+→ En effet, + [ton explication]
+→ Par exemple, + [exemple concret]
+追问自己：[针对文章主题的具体追问]
+
+C — Conséquence（带来什么结果）
+如果这样下去，会发生什么？
+→ Ainsi, / Par conséquent, + [résultat]
+追问自己：[针对文章主题的后果追问]
+
+💡 今天学的词块在AEC每个环节都能用：${chunkList}`,
+
+        B2: `Tu es un professeur de français expert pour niveau B2.
+
+L'article : "${articleText.substring(0, 400)}..."
+Sujet : "${writingTopic}"
+Expressions apprises : ${chunkList}
+${needsSearch ? '(Des exemples concrets et actualités ont été recherchés et sont inclus ci-dessous)' : ''}
+
+Génère un guide de réflexion BILINGUE (chinois + français).
+Structure AEC obligatoire avec DEUX arguments développés.
+
+Format :
+📝 [Titre]
+
+【构建你的论证前，先想清楚】
+
+① [针对文章主题的核心争议问题，中文]
+② [反方最强论据是什么？如何回应，中文]
+③ [现实执行中的困难，中文]
+
+【用AEC结构写两个论点】
+
+论点一：
+A — [你的主张，中文提示]
+→ [句式框架，法文]
+E — [解释+具体例子，中文提示]
+→ [句式框架，法文]
+C — [后果，中文提示]
+→ [句式框架，法文]
+
+论点二：
+A / E / C — [同上格式]
+
+最后加一句Nuance（承认对方合理性）：
+→ Il convient toutefois de noter que...
+→ Certes..., mais...
+${bannedStr}
+💡 Expressions à mobiliser : ${chunkList}`,
+
+        C1: `Tu es un professeur de français expert pour niveau C1/DALF.
+
+Article : "${articleText.substring(0, 500)}..."
+Sujet : "${writingTopic}"
+Expressions apprises : ${chunkList}
+${needsSearch ? '(Actualités et données recherchées incluses)' : ''}
+
+Génère un guide ENTIÈREMENT EN FRANÇAIS avec structure AEC approfondie.
+Niveau de langue : C1, registre soutenu.
+
+Format :
+📝 [Titre]
+
+【Avant de rédiger — déconstruire le sujet】
+
+① [Question sur la tension profonde du débat]
+② [Meilleur argument adverse et comment y répondre]
+③ [Limite ou paradoxe à exploiter]
+
+【Actualités et données à mobiliser】
+• [Événement 1 lié au sujet avec source si possible]
+• [Données ou étude pertinente]
+• [Cas concret français ou international]
+
+【Structure AEC approfondie — deux arguments】
+
+Argument 1 :
+A : [Affirmation principale]
+E : [Explication nuancée + exemple concret]
+C : [Conséquence à long terme, pas superficielle]
+
+Argument 2 (nuance ou antithèse) :
+A / E / C : [même format]
+
+Synthèse dialectique :
+→ Il ne s'agit pas de choisir entre X et Y, mais de repenser Z.
+→ [Formulation de synthèse]
+${bannedStr}
+💡 Expressions à mobiliser : ${chunkList}`,
+
+        C2: `Tu es un professeur de français de niveau universitaire pour C2.
+
+Article : "${articleText.substring(0, 500)}..."
+Sujet : "${writingTopic}"
+Expressions apprises : ${chunkList}
+${needsSearch ? '(Références académiques et actualités incluses)' : ''}
+
+Génère un guide ENTIÈREMENT EN FRANÇAIS, registre académique.
+
+Format :
+📝 [Titre]
+
+【Déconstruction du sujet】
+
+① [Tension conceptuelle fondamentale — pas juste le fait, mais le paradoxe]
+② [Présupposés à remettre en question]
+③ [Angle original qui permettrait de dépasser le débat]
+
+【Références à mobiliser】
+• [Référence académique ou philosophique pertinente]
+• [Actualité récente avec source]
+• [Données empiriques ou étude]
+
+【Architecture argumentative】
+
+Thèse :
+A : [Proposition principale — formulée de manière précise et originale]
+E : [Développement avec nuance interne]
+C : [Conséquence systémique, pas anecdotique]
+
+Antithèse :
+A / E / C : [La position adverse la plus solide]
+
+Synthèse :
+→ [Dépassement dialectique — ni l'un ni l'autre, mais une troisième voie]
+
+Exigences stylistiques :
+→ Aucun mot du registre familier ou courant
+→ Chaque phrase doit être irremplaçable
+→ La conclusion doit ouvrir, pas fermer
+${bannedStr}
+💡 Expressions de référence : ${chunkList}`
+    };
+
+    return levelInstructions[lv] || levelInstructions['B1'];
+}
     const lv = state.userLevel || 'B1';
     const c = LEVEL_CFG[lv] || LEVEL_CFG.B1;
 
