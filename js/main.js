@@ -1,7 +1,10 @@
 import { state } from './state.js';
 import { CONFIG } from './config.js';
 import { render } from './render.js';
-import { initLangSwitch, bindPageEvents } from './actions.js';
+import { initLangSwitch, bindPageEvents, onWritingInput } from './actions.js';
+
+// onWritingInput需要在全局可访问（被contenteditable的oninput调用）
+window.onWritingInput = onWritingInput;
 
 // ==================== 初始化 ====================
 marked.setOptions({ breaks: true, gfm: true });
